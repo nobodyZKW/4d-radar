@@ -6,9 +6,20 @@ from typing import Any, Dict
 import torch
 from torch.utils.data import DataLoader
 
-from .dataset import VodRadarDataset, collate_fn
-from .model import RadarBaselineNet
-from .train import evaluate_center_ap, load_config
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+if __package__ in (None, ""):
+    import sys
+
+    if str(PROJECT_ROOT) not in sys.path:
+        sys.path.insert(0, str(PROJECT_ROOT))
+    from baseline.dataset import VodRadarDataset, collate_fn
+    from baseline.model import RadarBaselineNet
+    from baseline.train import evaluate_center_ap, load_config, resolve_path
+else:
+    from .dataset import VodRadarDataset, collate_fn
+    from .model import RadarBaselineNet
+    from .train import evaluate_center_ap, load_config, resolve_path
 
 
 def main() -> None:
@@ -18,10 +29,11 @@ def main() -> None:
     parser.add_argument("--max-val-batches", type=int, default=0)
     args = parser.parse_args()
 
-    cfg = load_config(Path(args.config))
-    ckpt_path = Path(args.ckpt)
-    if not ckpt_path.is_absolute():
-        ckpt_path = ckpt_path.resolve()
+    config_path = resolve_path(args.config)
+    cfg = load_config(config_path)
+    ckpt_path = resolve_path(args.ckpt)
+    if not ckpt_path.exists():
+        raise FileNotFoundError(f"Checkpoint not found: {ckpt_path}")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     val_set = VodRadarDataset(cfg, split=cfg["dataset"]["val_split"])

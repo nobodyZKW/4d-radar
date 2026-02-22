@@ -37,6 +37,28 @@ cd E:\毕设\code\4d-radar
 .\baseline\scripts\eval_baseline.ps1
 ```
 
+You can also run directly with Python:
+
+```powershell
+python -m baseline.eval
+```
+
+If you run with file path (not recommended), it is now supported too:
+
+```powershell
+python E:\毕设\code\4d-radar\baseline\eval.py
+```
+
+## PowerShell note
+
+`$PSScriptRoot` only exists inside `.ps1` files.  
+Do not paste the script internals into terminal line-by-line.  
+Run the script file itself, for example:
+
+```powershell
+.\baseline\scripts\train_baseline.ps1
+```
+
 ## Notes
 
 - This version uses a center-distance matching metric for fast iteration.

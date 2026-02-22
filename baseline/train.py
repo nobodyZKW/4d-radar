@@ -10,12 +10,33 @@ import yaml
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from .dataset import VodRadarDataset, collate_fn
-from .model import RadarBaselineNet
-from .utils import set_seed
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
+if __package__ in (None, ""):
+    import sys
+
+    if str(PROJECT_ROOT) not in sys.path:
+        sys.path.insert(0, str(PROJECT_ROOT))
+    from baseline.dataset import VodRadarDataset, collate_fn
+    from baseline.model import RadarBaselineNet
+    from baseline.utils import set_seed
+else:
+    from .dataset import VodRadarDataset, collate_fn
+    from .model import RadarBaselineNet
+    from .utils import set_seed
+
+
+def resolve_path(path_like: str) -> Path:
+    path = Path(path_like)
+    if path.is_absolute():
+        return path
+    if path.exists():
+        return path.resolve()
+    return (PROJECT_ROOT / path).resolve()
 
 
 def load_config(config_path: Path) -> Dict[str, Any]:
+    config_path = resolve_path(str(config_path))
     cfg = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     cfg["dataset"]["root"] = str((config_path.parent / cfg["dataset"]["root"]).resolve())
     return cfg
@@ -234,8 +255,9 @@ def main() -> None:
     parser.add_argument("--max-val-batches", type=int, default=0)
     args = parser.parse_args()
 
-    cfg = load_config(Path(args.config))
-    output_dir = (Path(args.config).parent / cfg["train"]["output_dir"]).resolve()
+    config_path = resolve_path(args.config)
+    cfg = load_config(config_path)
+    output_dir = (config_path.parent / cfg["train"]["output_dir"]).resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
     set_seed(int(cfg["train"]["seed"]))
