@@ -1,0 +1,35 @@
+dataset:
+  # Relative to this config file. Current default points to E:\毕设\code\vod-min
+  root: ../../../vod-min
+  train_split: train
+  val_split: val
+  class_names: [Car, Pedestrian, Cyclist]
+  class_map:
+    Car: [Car, truck, vehicle_other]
+    Pedestrian: [Pedestrian, human_depiction]
+    Cyclist: [Cyclist, bicycle, rider, moped_scooter, motor, ride_other, ride_uncertain, bicycle_rack]
+  point_dim: 7
+  max_points_per_sample: 60000
+  # [x_min, y_min, z_min, x_max, y_max, z_max] in lidar coordinates.
+  point_cloud_range: [0.0, -30.0, -6.0, 60.0, 30.0, 4.0]
+  voxel_size_xy: [0.25, 0.25]
+
+model:
+  in_channels: 7
+
+train:
+  seed: 3407
+  output_dir: ../outputs/vod_baseline
+  epochs: 30
+  batch_size: 8
+  num_workers: 4
+  lr: 0.001
+  weight_decay: 0.0001
+  hm_loss_weight: 1.0
+  reg_loss_weight: 2.0
+
+eval:
+  score_thresh: 0.15
+  topk_per_class: 100
+  # Approximate matching threshold in meters (center distance).
+  match_center_dist: 2.0
