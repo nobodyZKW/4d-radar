@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>4D Radar Baseline Dashboard</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <main class="layout">
+    <header class="hero">
+      <div>
+        <p class="kicker">4D RADAR EXPERIMENT SITE</p>
+        <h1>Baseline Dashboard</h1>
+        <p class="sub">展示训练结果、数据概况与图像标签序列播放。</p>
+      </div>
+      <div class="status-row">
+        <span id="healthBadge" class="badge badge-warn">Server: Checking</span>
+        <span id="historyBadge" class="badge badge-warn">History: Unknown</span>
+      </div>
+    </header>
+
+    <section class="panel metrics-panel">
+      <div class="panel-title-row">
+        <h2>Baseline Metrics</h2>
+        <span id="historyPath" class="mono"></span>
+      </div>
+      <div class="metric-cards" id="metricCards"></div>
+      <div class="chart-wrap">
+        <canvas id="f1Chart" width="980" height="280"></canvas>
+      </div>
+      <div class="table-wrap">
+        <table id="latestTable">
+          <thead>
+            <tr><th>Metric</th><th>Value</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel data-panel">
+      <h2>Dataset Summary</h2>
+      <div class="dataset-grid" id="datasetGrid"></div>
+      <h3>Class Histogram (train_val)</h3>
+      <div id="classBars" class="class-bars"></div>
+    </section>
+
+    <section class="panel player-panel">
+      <div class="panel-title-row">
+        <h2>Label Player</h2>
+        <span id="currentInfo" class="mono"></span>
+      </div>
+      <div class="controls">
+        <label>Split
+          <select id="splitSelect">
+            <option value="val">val</option>
+            <option value="train">train</option>
+            <option value="train_val">train_val</option>
+          </select>
+        </label>
+        <label>FPS
+          <input id="fpsInput" type="number" min="1" max="20" value="6" />
+        </label>
+        <label>Step
+          <input id="stepInput" type="number" min="1" max="20" value="1" />
+        </label>
+        <button id="loadBtn">Load</button>
+        <button id="playBtn">Play</button>
+        <button id="prevBtn">Prev</button>
+        <button id="nextBtn">Next</button>
+      </div>
+      <div class="scrub-row">
+        <input id="frameSlider" type="range" min="0" max="0" value="0" />
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="viewerCanvas" width="1280" height="720"></canvas>
+      </div>
+      <div id="legend" class="legend"></div>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
+

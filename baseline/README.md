@@ -37,6 +37,17 @@ cd E:\毕设\code\4d-radar
 .\baseline\scripts\eval_baseline.ps1
 ```
 
+## Visualization
+
+Quickly visualize one sample (left: image + 2D boxes, right: radar BEV):
+
+```powershell
+python E:\毕设\code\4d-radar\baseline\scripts\visualize_sample.py `
+  --data-root E:\毕设\code\vod-min `
+  --id 00000 `
+  --save E:\毕设\code\4d-radar\baseline\vis_00000.png
+```
+
 You can also run directly with Python:
 
 ```powershell
