@@ -1,0 +1,14 @@
+{
+  "epochs": 30,
+  "latest_epoch": 30,
+  "mean_f1": 0.17710801864118708,
+  "Car_precision": 0.06748318924111431,
+  "Car_recall": 0.5204908543644362,
+  "Car_f1": 0.11947596396587919,
+  "Pedestrian_precision": 0.11430051046829919,
+  "Pedestrian_recall": 0.4121098959722593,
+  "Pedestrian_f1": 0.17896443878142013,
+  "Cyclist_precision": 0.1670224846695435,
+  "Cyclist_recall": 0.3845027710969361,
+  "Cyclist_f1": 0.23288365317626195
+}
