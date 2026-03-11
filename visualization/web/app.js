@@ -1,10 +1,6 @@
 const state = {
   summary: null,
   history: [],
-  ids: [],
-  currentIdx: 0,
-  timer: null,
-  playing: false,
   labelCache: new Map(),
   colors: new Map(),
 };
@@ -15,19 +11,6 @@ const historyPath = document.getElementById("historyPath");
 const metricCards = document.getElementById("metricCards");
 const latestTableBody = document.querySelector("#latestTable tbody");
 const datasetGrid = document.getElementById("datasetGrid");
-const classBars = document.getElementById("classBars");
-const splitSelect = document.getElementById("splitSelect");
-const fpsInput = document.getElementById("fpsInput");
-const stepInput = document.getElementById("stepInput");
-const loadBtn = document.getElementById("loadBtn");
-const playBtn = document.getElementById("playBtn");
-const prevBtn = document.getElementById("prevBtn");
-const nextBtn = document.getElementById("nextBtn");
-const frameSlider = document.getElementById("frameSlider");
-const currentInfo = document.getElementById("currentInfo");
-const legend = document.getElementById("legend");
-const canvas = document.getElementById("viewerCanvas");
-const ctx = canvas.getContext("2d");
 const f1Chart = document.getElementById("f1Chart");
 const chartCtx = f1Chart.getContext("2d");
 
@@ -96,9 +79,9 @@ function renderF1Chart(history) {
   const w = f1Chart.width;
   const h = f1Chart.height;
   chartCtx.clearRect(0, 0, w, h);
-
   chartCtx.fillStyle = "#fff";
   chartCtx.fillRect(0, 0, w, h);
+
   chartCtx.strokeStyle = "#d8e3d6";
   chartCtx.lineWidth = 1;
   for (let i = 0; i <= 5; i++) {
@@ -113,9 +96,8 @@ function renderF1Chart(history) {
   chartCtx.fillText("mean_f1", 42, 16);
 
   if (!history.length) return;
-  const values = history.map(x => Number(x.mean_f1 ?? 0));
+  const values = history.map((x) => Number(x.mean_f1 ?? 0));
   const maxY = Math.max(0.01, ...values) * 1.05;
-  const minY = 0.0;
   const n = values.length;
 
   chartCtx.strokeStyle = "#0f8b8d";
@@ -123,14 +105,11 @@ function renderF1Chart(history) {
   chartCtx.beginPath();
   for (let i = 0; i < n; i++) {
     const x = 40 + (w - 60) * (i / Math.max(1, n - 1));
-    const y = 20 + (h - 40) * (1 - (values[i] - minY) / Math.max(1e-6, maxY - minY));
+    const y = 20 + (h - 40) * (1 - values[i] / Math.max(1e-6, maxY));
     if (i === 0) chartCtx.moveTo(x, y);
     else chartCtx.lineTo(x, y);
   }
   chartCtx.stroke();
-
-  chartCtx.fillStyle = "#1d2a2a";
-  chartCtx.fillText(`max=${maxY.toFixed(3)}`, w - 110, 16);
 }
 
 function renderDatasetSummary(summary) {
@@ -142,6 +121,7 @@ function renderDatasetSummary(summary) {
     ["labels", c.labels ?? 0],
     ["calib", c.calib ?? 0],
     ["split_train", c.split_train ?? 0],
+    ["split_test", c.split_test ?? 0],
     ["split_val", c.split_val ?? 0],
     ["split_train_val", c.split_train_val ?? 0],
   ];
@@ -153,11 +133,12 @@ function renderDatasetSummary(summary) {
   }
 }
 
-function renderClassBars(hist) {
-  classBars.innerHTML = "";
+function renderClassBars(containerId, hist) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
   const entries = Object.entries(hist || {});
   if (!entries.length) return;
-  const maxVal = Math.max(...entries.map(x => x[1]));
+  const maxVal = Math.max(...entries.map((x) => x[1]));
   for (const [cls, val] of entries.slice(0, 20)) {
     const ratio = (val / maxVal) * 100;
     const row = document.createElement("div");
@@ -167,7 +148,25 @@ function renderClassBars(hist) {
       <div class="bar"><span style="width:${ratio.toFixed(2)}%"></span></div>
       <div>${val}</div>
     `;
-    classBars.appendChild(row);
+    container.appendChild(row);
+  }
+}
+
+function renderSplitStats(containerId, splitName, frameCount, hist) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  const labelCount = Object.values(hist || {}).reduce((a, b) => a + Number(b || 0), 0);
+  const items = [
+    ["split", splitName],
+    ["frames", frameCount],
+    ["labels", labelCount],
+    ["classes", Object.keys(hist || {}).length],
+  ];
+  for (const [k, v] of items) {
+    const div = document.createElement("div");
+    div.className = "kv";
+    div.innerHTML = `<div class="k">${k}</div><div class="v">${v}</div>`;
+    container.appendChild(div);
   }
 }
 
@@ -185,18 +184,13 @@ async function loadSummary() {
   const data = await fetchJson("/api/summary");
   state.summary = data;
   renderDatasetSummary(data);
-  renderClassBars(data.class_hist_train_val || {});
-}
 
-async function loadSampleIds() {
-  const split = splitSelect.value;
-  const data = await fetchJson(`/api/samples?split=${encodeURIComponent(split)}&limit=5000&offset=0`);
-  state.ids = data.ids || [];
-  state.currentIdx = 0;
-  frameSlider.min = "0";
-  frameSlider.max = String(Math.max(0, state.ids.length - 1));
-  frameSlider.value = "0";
-  await renderCurrentFrame();
+  const counts = data.counts || {};
+  const hist = data.class_hist || {};
+  renderSplitStats("trainStats", "train", counts.split_train || 0, hist.train || {});
+  renderSplitStats("testStats", "test", counts.split_test || 0, hist.test || {});
+  renderClassBars("trainClassBars", hist.train || {});
+  renderClassBars("testClassBars", hist.test || {});
 }
 
 async function getLabels(sampleId) {
@@ -207,20 +201,44 @@ async function getLabels(sampleId) {
   return labels;
 }
 
-function drawLegend(labels) {
-  const names = [...new Set(labels.map(x => x.name))].sort();
-  legend.innerHTML = "";
+function createPlayer(prefix, split) {
+  const player = {
+    split,
+    ids: [],
+    currentIdx: 0,
+    timer: null,
+    playing: false,
+    currentInfo: document.getElementById(`${prefix}CurrentInfo`),
+    fpsInput: document.getElementById(`${prefix}FpsInput`),
+    stepInput: document.getElementById(`${prefix}StepInput`),
+    loadBtn: document.getElementById(`${prefix}LoadBtn`),
+    playBtn: document.getElementById(`${prefix}PlayBtn`),
+    prevBtn: document.getElementById(`${prefix}PrevBtn`),
+    nextBtn: document.getElementById(`${prefix}NextBtn`),
+    frameSlider: document.getElementById(`${prefix}FrameSlider`),
+    legend: document.getElementById(`${prefix}Legend`),
+    canvas: document.getElementById(`${prefix}ViewerCanvas`),
+  };
+  player.ctx = player.canvas.getContext("2d");
+  return player;
+}
+
+function drawLegend(player, labels) {
+  const names = [...new Set(labels.map((x) => x.name))].sort();
+  player.legend.innerHTML = "";
   for (const name of names) {
     const item = document.createElement("span");
     item.className = "legend-item";
     item.style.borderColor = colorForClass(name);
     item.textContent = name;
-    legend.appendChild(item);
+    player.legend.appendChild(item);
   }
 }
 
-function drawFrame(image, labels, sampleId) {
+function drawFrame(player, image, labels, sampleId) {
+  const { ctx, canvas } = player;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   const imgW = image.naturalWidth;
   const imgH = image.naturalHeight;
   const scale = Math.min(canvas.width / imgW, canvas.height / imgH);
@@ -228,7 +246,6 @@ function drawFrame(image, labels, sampleId) {
   const drawH = imgH * scale;
   const dx = (canvas.width - drawW) / 2;
   const dy = (canvas.height - drawH) / 2;
-
   ctx.drawImage(image, dx, dy, drawW, drawH);
 
   for (const item of labels) {
@@ -250,69 +267,84 @@ function drawFrame(image, labels, sampleId) {
     ctx.fillText(text, rx + 4, Math.max(12, ry - 6));
   }
 
-  currentInfo.textContent = `id=${sampleId} | frame=${state.currentIdx + 1}/${state.ids.length} | labels=${labels.length}`;
-  drawLegend(labels);
+  player.currentInfo.textContent = `split=${player.split} | id=${sampleId} | frame=${player.currentIdx + 1}/${player.ids.length} | labels=${labels.length}`;
+  drawLegend(player, labels);
 }
 
-async function renderCurrentFrame() {
-  if (!state.ids.length) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    currentInfo.textContent = "No samples loaded";
+async function renderCurrentFrame(player) {
+  if (!player.ids.length) {
+    player.ctx.clearRect(0, 0, player.canvas.width, player.canvas.height);
+    player.currentInfo.textContent = `split=${player.split} | No samples loaded`;
     return;
   }
-  const sampleId = state.ids[state.currentIdx];
+  const sampleId = player.ids[player.currentIdx];
   const labels = await getLabels(sampleId);
 
   const img = new Image();
-  img.onload = () => drawFrame(img, labels, sampleId);
+  img.onload = () => drawFrame(player, img, labels, sampleId);
   img.onerror = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    currentInfo.textContent = `Image load failed: ${sampleId}`;
+    player.ctx.clearRect(0, 0, player.canvas.width, player.canvas.height);
+    player.currentInfo.textContent = `Image load failed: ${sampleId}`;
   };
   img.src = `/data/image/${sampleId}.jpg`;
 }
 
-function stepFrame(delta) {
-  if (!state.ids.length) return;
-  const n = state.ids.length;
-  state.currentIdx = (state.currentIdx + delta + n) % n;
-  frameSlider.value = String(state.currentIdx);
-  renderCurrentFrame();
+function stepFrame(player, delta) {
+  if (!player.ids.length) return;
+  const n = player.ids.length;
+  player.currentIdx = (player.currentIdx + delta + n) % n;
+  player.frameSlider.value = String(player.currentIdx);
+  renderCurrentFrame(player);
 }
 
-function startPlay() {
-  if (state.playing) return;
-  const fps = Math.max(1, Math.min(20, Number(fpsInput.value) || 6));
-  const step = Math.max(1, Math.min(20, Number(stepInput.value) || 1));
-  state.playing = true;
-  playBtn.textContent = "Pause";
-  state.timer = setInterval(() => stepFrame(step), Math.floor(1000 / fps));
+function startPlay(player) {
+  if (player.playing) return;
+  const fps = Math.max(1, Math.min(20, Number(player.fpsInput.value) || 6));
+  const step = Math.max(1, Math.min(20, Number(player.stepInput.value) || 1));
+  player.playing = true;
+  player.playBtn.textContent = "Pause";
+  player.timer = setInterval(() => stepFrame(player, step), Math.floor(1000 / fps));
 }
 
-function stopPlay() {
-  if (!state.playing) return;
-  clearInterval(state.timer);
-  state.timer = null;
-  state.playing = false;
-  playBtn.textContent = "Play";
+function stopPlay(player) {
+  if (!player.playing) return;
+  clearInterval(player.timer);
+  player.timer = null;
+  player.playing = false;
+  player.playBtn.textContent = "Play";
 }
 
-function bindEvents() {
-  loadBtn.addEventListener("click", async () => {
-    stopPlay();
-    await loadSampleIds();
+async function loadSampleIds(player) {
+  const data = await fetchJson(`/api/samples?split=${encodeURIComponent(player.split)}&limit=5000&offset=0`);
+  player.ids = data.ids || [];
+  player.currentIdx = 0;
+  player.frameSlider.min = "0";
+  player.frameSlider.max = String(Math.max(0, player.ids.length - 1));
+  player.frameSlider.value = "0";
+  await renderCurrentFrame(player);
+}
+
+function bindPlayerEvents(player) {
+  player.loadBtn.addEventListener("click", async () => {
+    stopPlay(player);
+    await loadSampleIds(player);
   });
-  playBtn.addEventListener("click", () => {
-    if (state.playing) stopPlay();
-    else startPlay();
+  player.playBtn.addEventListener("click", () => {
+    if (player.playing) stopPlay(player);
+    else startPlay(player);
   });
-  prevBtn.addEventListener("click", () => stepFrame(-1));
-  nextBtn.addEventListener("click", () => stepFrame(1));
-  frameSlider.addEventListener("input", () => {
-    state.currentIdx = Number(frameSlider.value);
-    renderCurrentFrame();
+  player.prevBtn.addEventListener("click", () => stepFrame(player, -1));
+  player.nextBtn.addEventListener("click", () => stepFrame(player, 1));
+  player.frameSlider.addEventListener("input", () => {
+    player.currentIdx = Number(player.frameSlider.value);
+    renderCurrentFrame(player);
   });
 }
+
+const trainPlayer = createPlayer("train", "train");
+const testPlayer = createPlayer("test", "test");
+bindPlayerEvents(trainPlayer);
+bindPlayerEvents(testPlayer);
 
 async function bootstrap() {
   try {
@@ -324,12 +356,13 @@ async function bootstrap() {
   }
   await loadHistory();
   await loadSummary();
-  await loadSampleIds();
+  await loadSampleIds(trainPlayer);
+  await loadSampleIds(testPlayer);
 }
 
-bindEvents();
 bootstrap().catch((err) => {
   console.error(err);
-  currentInfo.textContent = String(err);
+  trainPlayer.currentInfo.textContent = String(err);
+  testPlayer.currentInfo.textContent = String(err);
 });
 

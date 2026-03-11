@@ -78,6 +78,21 @@ h1 {
   flex-wrap: wrap;
 }
 
+.quick-link {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.quick-link:hover {
+  background: #f2f8f7;
+}
+
 .badge {
   padding: 6px 10px;
   border-radius: 999px;
@@ -191,6 +206,10 @@ th {
   gap: 8px;
 }
 
+.mini-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .kv {
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -281,10 +300,23 @@ th {
   background: #0d1013;
 }
 
+.split-5050-wrap {
+  margin-top: 8px;
+}
+
 #viewerCanvas {
   width: 100%;
   height: auto;
   display: block;
+}
+
+.split-legend {
+  margin-top: 8px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .legend {
@@ -302,6 +334,12 @@ th {
   background: #fff;
 }
 
+.split-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1fr;
+}
+
 @media (max-width: 980px) {
   .metric-cards,
   .dataset-grid {
@@ -311,4 +349,3 @@ th {
     flex-direction: column;
   }
 }
-

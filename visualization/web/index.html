@@ -13,11 +13,12 @@
       <div>
         <p class="kicker">4D RADAR EXPERIMENT SITE</p>
         <h1>Baseline Dashboard</h1>
-        <p class="sub">展示训练结果、数据概况与图像标签序列播放。</p>
+        <p class="sub">训练集与测试集分区展示：指标、统计、逐帧标签播放。</p>
       </div>
       <div class="status-row">
         <span id="healthBadge" class="badge badge-warn">Server: Checking</span>
         <span id="historyBadge" class="badge badge-warn">History: Unknown</span>
+        <a class="quick-link" href="/split-player">Open 50/50 Player</a>
       </div>
     </header>
 
@@ -41,47 +42,71 @@
     </section>
 
     <section class="panel data-panel">
-      <h2>Dataset Summary</h2>
+      <h2>全量数据概览</h2>
       <div class="dataset-grid" id="datasetGrid"></div>
-      <h3>Class Histogram (train_val)</h3>
-      <div id="classBars" class="class-bars"></div>
     </section>
 
-    <section class="panel player-panel">
-      <div class="panel-title-row">
-        <h2>Label Player</h2>
-        <span id="currentInfo" class="mono"></span>
-      </div>
-      <div class="controls">
-        <label>Split
-          <select id="splitSelect">
-            <option value="val">val</option>
-            <option value="train">train</option>
-            <option value="train_val">train_val</option>
-          </select>
-        </label>
-        <label>FPS
-          <input id="fpsInput" type="number" min="1" max="20" value="6" />
-        </label>
-        <label>Step
-          <input id="stepInput" type="number" min="1" max="20" value="1" />
-        </label>
-        <button id="loadBtn">Load</button>
-        <button id="playBtn">Play</button>
-        <button id="prevBtn">Prev</button>
-        <button id="nextBtn">Next</button>
-      </div>
-      <div class="scrub-row">
-        <input id="frameSlider" type="range" min="0" max="0" value="0" />
-      </div>
-      <div class="canvas-wrap">
-        <canvas id="viewerCanvas" width="1280" height="720"></canvas>
-      </div>
-      <div id="legend" class="legend"></div>
+    <section class="split-grid">
+      <section class="panel player-panel">
+        <div class="panel-title-row">
+          <h2>训练集展示</h2>
+          <span id="trainCurrentInfo" class="mono"></span>
+        </div>
+        <div class="dataset-grid mini-grid" id="trainStats"></div>
+        <h3>训练集类别分布</h3>
+        <div id="trainClassBars" class="class-bars"></div>
+        <div class="controls">
+          <label>FPS
+            <input id="trainFpsInput" type="number" min="1" max="20" value="6" />
+          </label>
+          <label>Step
+            <input id="trainStepInput" type="number" min="1" max="20" value="1" />
+          </label>
+          <button id="trainLoadBtn">Load</button>
+          <button id="trainPlayBtn">Play</button>
+          <button id="trainPrevBtn">Prev</button>
+          <button id="trainNextBtn">Next</button>
+        </div>
+        <div class="scrub-row">
+          <input id="trainFrameSlider" type="range" min="0" max="0" value="0" />
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="trainViewerCanvas" width="1280" height="720"></canvas>
+        </div>
+        <div id="trainLegend" class="legend"></div>
+      </section>
+
+      <section class="panel player-panel">
+        <div class="panel-title-row">
+          <h2>测试集展示</h2>
+          <span id="testCurrentInfo" class="mono"></span>
+        </div>
+        <div class="dataset-grid mini-grid" id="testStats"></div>
+        <h3>测试集类别分布</h3>
+        <div id="testClassBars" class="class-bars"></div>
+        <div class="controls">
+          <label>FPS
+            <input id="testFpsInput" type="number" min="1" max="20" value="6" />
+          </label>
+          <label>Step
+            <input id="testStepInput" type="number" min="1" max="20" value="1" />
+          </label>
+          <button id="testLoadBtn">Load</button>
+          <button id="testPlayBtn">Play</button>
+          <button id="testPrevBtn">Prev</button>
+          <button id="testNextBtn">Next</button>
+        </div>
+        <div class="scrub-row">
+          <input id="testFrameSlider" type="range" min="0" max="0" value="0" />
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="testViewerCanvas" width="1280" height="720"></canvas>
+        </div>
+        <div id="testLegend" class="legend"></div>
+      </section>
     </section>
   </main>
 
   <script src="./app.js"></script>
 </body>
 </html>
-

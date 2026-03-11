@@ -9,8 +9,22 @@ This folder contains an isolated baseline pipeline using the current dataset at
 - `configs/vod_baseline.yaml`: baseline config
 - `scripts/train_baseline.ps1`: one-command training
 - `scripts/eval_baseline.ps1`: one-command evaluation
+- `scripts/generate_test_visuals.ps1`: batch export test visualizations (left image, right BEV)
 - `requirements.txt`: python dependencies
 - `outputs/`: checkpoints and logs (created by training)
+
+## Split Policy
+
+- Training uses `ImageSets/train.txt`
+- Testing uses `ImageSets/test.txt` (configured via `val_split: test`)
+- `val.txt` is currently synced to `test.txt` for compatibility
+
+## Clean Previous Results
+
+```powershell
+cd E:\毕设\code\4d-radar
+cmd /c "rmdir /s /q baseline\outputs 2>nul & rmdir /s /q baseline\results 2>nul & mkdir baseline\outputs & mkdir baseline\results"
+```
 
 ## Setup
 
@@ -36,6 +50,17 @@ Outputs are written to `baseline/outputs/vod_baseline`.
 cd E:\毕设\code\4d-radar
 .\baseline\scripts\eval_baseline.ps1
 ```
+
+## Generate Test Result Images (50% image + 50% BEV)
+
+```powershell
+cd E:\毕设\code\4d-radar
+.\baseline\scripts\generate_test_visuals.ps1
+```
+
+Output folder:
+
+- `baseline/results/test_vis/*.png`
 
 ## Visualization
 

@@ -2,7 +2,7 @@ dataset:
   # Relative to this config file. Current default points to E:\毕设\code\vod-min
   root: ../../../vod-min
   train_split: train
-  val_split: val
+  val_split: test
   class_names: [Car, Pedestrian, Cyclist]
   class_map:
     Car: [Car, truck, vehicle_other]
