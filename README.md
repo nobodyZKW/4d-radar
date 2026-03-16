@@ -33,9 +33,7 @@
 - 损失函数：`Focal(heatmap) + SmoothL1(reg)`，权重 `1:2`
 - 评估方式：中心点距离匹配 F1（快速迭代指标，不是官方 3D mAP）
 
-## 相关论文与 GitHub
-
-### 与当前 baseline 技术路线最相关
+## 参考论文与 GitHub
 
 - CenterNet (Objects as Points)  
   Paper: https://arxiv.org/abs/1904.07850  
@@ -62,7 +60,6 @@
 ## 数据集来源
 
 - 原始来源：**View-of-Delft (VoD) PUBLIC**
-- 本地路径：`E:\毕设\code\vod-min`
 - 官方主页：https://intelligent-vehicles.org/datasets/view-of-delft/
 - 官方开发工具：https://github.com/tudelft-iv/view-of-delft-dataset
 
@@ -72,8 +69,9 @@
 - `radar_5frames/training/velodyne`: 8682
 - `calib`: 8682
 - `label_2`: 6435
-- `ImageSets/train.txt`: 5139
-- `ImageSets/val.txt`: 1296
+- `ImageSets/train.txt`: 5791（训练集）
+- `ImageSets/test.txt`: 644（测试集）
+- `ImageSets/val.txt`: 644
 - `ImageSets/train_val.txt`: 6435
 
 ## Baseline 最新结果
@@ -133,4 +131,3 @@ python .\visualization\server.py --host 127.0.0.1 --port 8090
 ```
 
 浏览器访问：`http://127.0.0.1:8090`
-

@@ -62,6 +62,25 @@ Output folder:
 
 - `baseline/results/test_vis/*.png`
 
+## Generate README Figures
+
+This generates:
+
+- `baseline/results/loss_curve.png`
+- `baseline/results/f1_curve.png`
+- `baseline/results/latest_class_metrics.png`
+- `baseline/results/sample_vis_00000.png`
+- `baseline/results/latest_metrics.json`
+
+```powershell
+cd E:\毕设\code\4d-radar
+python .\baseline\scripts\generate_readme_figures.py `
+  --data-root ..\vod-min `
+  --history baseline\outputs\vod_baseline\history.json `
+  --out-dir baseline\results `
+  --sample-id 00000
+```
+
 ## Visualization
 
 Quickly visualize one sample (left: image + 2D boxes, right: radar BEV):
