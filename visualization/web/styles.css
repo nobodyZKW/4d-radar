@@ -132,12 +132,14 @@ h1 {
   justify-content: space-between;
   gap: 10px;
   align-items: baseline;
+  flex-wrap: wrap;
 }
 
 .mono {
   font-family: "IBM Plex Mono", "Cascadia Code", Consolas, monospace;
   font-size: 12px;
   color: #475353;
+  overflow-wrap: anywhere;
 }
 
 .metric-cards {
@@ -170,6 +172,7 @@ h1 {
   border: 1px dashed var(--line);
   border-radius: 12px;
   background: #fffdf8;
+  overflow: hidden;
 }
 
 #f1Chart {
@@ -177,8 +180,15 @@ h1 {
   height: 280px;
 }
 
+.chart-canvas {
+  width: 100%;
+  height: 260px;
+  display: block;
+}
+
 .table-wrap {
   margin-top: 12px;
+  overflow-x: auto;
 }
 
 table {
@@ -340,10 +350,67 @@ th {
   grid-template-columns: 1fr;
 }
 
+.result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.portal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.portal-card {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.portal-card h3 {
+  margin: 0;
+}
+
+.portal-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.portal-meta {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.portal-btn {
+  display: inline-block;
+  width: fit-content;
+  text-decoration: none;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-weight: 700;
+  background: #fff;
+}
+
+.portal-btn:hover {
+  background: #f2f8f7;
+}
+
 @media (max-width: 980px) {
   .metric-cards,
   .dataset-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+  .portal-grid {
+    grid-template-columns: 1fr;
   }
   .hero {
     flex-direction: column;

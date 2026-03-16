@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4D Radar Baseline Dashboard</title>
+  <title>4D Radar Main Dashboard</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
@@ -12,101 +12,47 @@
     <header class="hero">
       <div>
         <p class="kicker">4D RADAR EXPERIMENT SITE</p>
-        <h1>Baseline Dashboard</h1>
-        <p class="sub">训练集与测试集分区展示：指标、统计、逐帧标签播放。</p>
+        <h1>主界面</h1>
+        <p class="sub">Baseline 和 v1 结果分离展示。请从下面入口进入对应页面。</p>
       </div>
       <div class="status-row">
         <span id="healthBadge" class="badge badge-warn">Server: Checking</span>
-        <span id="historyBadge" class="badge badge-warn">History: Unknown</span>
-        <a class="quick-link" href="/split-player">Open 50/50 Player</a>
       </div>
     </header>
 
-    <section class="panel metrics-panel">
-      <div class="panel-title-row">
-        <h2>Baseline Metrics</h2>
-        <span id="historyPath" class="mono"></span>
-      </div>
-      <div class="metric-cards" id="metricCards"></div>
-      <div class="chart-wrap">
-        <canvas id="f1Chart" width="980" height="280"></canvas>
-      </div>
-      <div class="table-wrap">
-        <table id="latestTable">
-          <thead>
-            <tr><th>Metric</th><th>Value</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+    <section class="panel">
+      <h2>页面入口</h2>
+      <div class="portal-grid">
+        <article class="portal-card">
+          <h3>Baseline 结果</h3>
+          <p>展示 baseline 的训练曲线、最新指标、数据统计和 train/test 播放器。</p>
+          <div id="baselineMeta" class="portal-meta">loading...</div>
+          <a class="portal-btn" href="/baseline-results">进入 Baseline 界面</a>
+        </article>
+
+        <article class="portal-card">
+          <h3>V1 结果</h3>
+          <p>展示 centerpoint_radar_v1 与消融实验结果，支持实验切换与曲线对比。</p>
+          <div id="v1Meta" class="portal-meta">loading...</div>
+          <a class="portal-btn" href="/v1-results">进入 V1 界面</a>
+        </article>
+
+        <article class="portal-card">
+          <h3>50/50 可视化播放器</h3>
+          <p>上下两个播放器：train 与 test。每个播放器左图像+标签，右 BEV。</p>
+          <div id="playerMeta" class="portal-meta">实时样本浏览入口</div>
+          <a class="portal-btn" href="/split-player">进入播放器</a>
+        </article>
       </div>
     </section>
 
-    <section class="panel data-panel">
-      <h2>全量数据概览</h2>
-      <div class="dataset-grid" id="datasetGrid"></div>
-    </section>
-
-    <section class="split-grid">
-      <section class="panel player-panel">
-        <div class="panel-title-row">
-          <h2>训练集展示</h2>
-          <span id="trainCurrentInfo" class="mono"></span>
-        </div>
-        <div class="dataset-grid mini-grid" id="trainStats"></div>
-        <h3>训练集类别分布</h3>
-        <div id="trainClassBars" class="class-bars"></div>
-        <div class="controls">
-          <label>FPS
-            <input id="trainFpsInput" type="number" min="1" max="20" value="6" />
-          </label>
-          <label>Step
-            <input id="trainStepInput" type="number" min="1" max="20" value="1" />
-          </label>
-          <button id="trainLoadBtn">Load</button>
-          <button id="trainPlayBtn">Play</button>
-          <button id="trainPrevBtn">Prev</button>
-          <button id="trainNextBtn">Next</button>
-        </div>
-        <div class="scrub-row">
-          <input id="trainFrameSlider" type="range" min="0" max="0" value="0" />
-        </div>
-        <div class="canvas-wrap">
-          <canvas id="trainViewerCanvas" width="1280" height="720"></canvas>
-        </div>
-        <div id="trainLegend" class="legend"></div>
-      </section>
-
-      <section class="panel player-panel">
-        <div class="panel-title-row">
-          <h2>测试集展示</h2>
-          <span id="testCurrentInfo" class="mono"></span>
-        </div>
-        <div class="dataset-grid mini-grid" id="testStats"></div>
-        <h3>测试集类别分布</h3>
-        <div id="testClassBars" class="class-bars"></div>
-        <div class="controls">
-          <label>FPS
-            <input id="testFpsInput" type="number" min="1" max="20" value="6" />
-          </label>
-          <label>Step
-            <input id="testStepInput" type="number" min="1" max="20" value="1" />
-          </label>
-          <button id="testLoadBtn">Load</button>
-          <button id="testPlayBtn">Play</button>
-          <button id="testPrevBtn">Prev</button>
-          <button id="testNextBtn">Next</button>
-        </div>
-        <div class="scrub-row">
-          <input id="testFrameSlider" type="range" min="0" max="0" value="0" />
-        </div>
-        <div class="canvas-wrap">
-          <canvas id="testViewerCanvas" width="1280" height="720"></canvas>
-        </div>
-        <div id="testLegend" class="legend"></div>
-      </section>
+    <section class="panel">
+      <h2>数据集概览</h2>
+      <div id="datasetGrid" class="dataset-grid"></div>
     </section>
   </main>
 
-  <script src="./app.js"></script>
+  <script src="./main.js"></script>
 </body>
 </html>
+

@@ -1,0 +1,62 @@
+dataset:
+  root: ../../../vod-min
+  train_split: train
+  val_split: test
+  class_names: [Car, Pedestrian, Cyclist]
+  class_map:
+    Car: [Car, truck, vehicle_other]
+    Pedestrian: [Pedestrian, human_depiction]
+    Cyclist: [Cyclist, bicycle, rider, moped_scooter, motor, ride_other, ride_uncertain, bicycle_rack]
+  point_dim: 7
+  max_points_per_sample: 60000
+  point_cloud_range: [0.0, -30.0, -6.0, 60.0, 30.0, 4.0]
+  voxel_size_xy: [0.25, 0.25]
+  bev_feature_set: baseline7
+  num_input_channels: 7
+  feature_indices: {rcs: 3, doppler: 4, comp_doppler: 5, time: 6}
+  velocity_target_mode: none
+  velocity_target_min_points: 4
+  augment:
+    enable: false
+    flip_prob: 0.0
+    scale_range: [1.0, 1.0]
+    rot_range_deg: [0.0, 0.0]
+    point_dropout_prob: 0.0
+
+model:
+  in_channels: 7
+  base_channels: 32
+  use_motion_branch: false
+  geometry_channels: [0, 1, 2, 3, 4, 5, 6]
+  motion_channels: [0]
+  use_velocity_head: true
+
+train:
+  seed: 3407
+  output_dir: ../outputs/ablation_baseline_post
+  epochs: 30
+  batch_size: 8
+  num_workers: 4
+  lr: 0.001
+  weight_decay: 0.0001
+  grad_clip_norm: 0.0
+  hm_weight: 1.0
+  box_weight: 2.0
+  yaw_weight: 0.2
+  vel_weight: 0.0
+  use_velocity_loss: false
+  scheduler: {type: none, min_lr: 1.0e-5, milestones: [15, 25], gamma: 0.1}
+  ema: {use_ema: false, decay: 0.999, eval_with_ema: false}
+
+decode:
+  use_local_max: true
+  score_thresh: 0.15
+  topk: 100
+  topk_mode: per_class
+  nms_type: circle
+  nms_thresh: 1.5
+  nms_class_agnostic: false
+
+eval:
+  match_center_dist: 2.0
+

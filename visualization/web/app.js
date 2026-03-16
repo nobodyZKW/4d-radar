@@ -14,6 +14,21 @@ const datasetGrid = document.getElementById("datasetGrid");
 const f1Chart = document.getElementById("f1Chart");
 const chartCtx = f1Chart.getContext("2d");
 
+function resizeCanvas(canvas, targetHeight = 280) {
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = Math.max(320, Math.floor(canvas.clientWidth || targetHeight * 2));
+  const cssH = targetHeight;
+  const pxW = Math.floor(cssW * dpr);
+  const pxH = Math.floor(cssH * dpr);
+  if (canvas.width !== pxW || canvas.height !== pxH) {
+    canvas.width = pxW;
+    canvas.height = pxH;
+  }
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { w: cssW, h: cssH };
+}
+
 function colorForClass(name) {
   if (state.colors.has(name)) return state.colors.get(name);
   const palette = [
@@ -76,8 +91,7 @@ function renderLatestTable(latest) {
 }
 
 function renderF1Chart(history) {
-  const w = f1Chart.width;
-  const h = f1Chart.height;
+  const { w, h } = resizeCanvas(f1Chart, 280);
   chartCtx.clearRect(0, 0, w, h);
   chartCtx.fillStyle = "#fff";
   chartCtx.fillRect(0, 0, w, h);
@@ -171,7 +185,7 @@ function renderSplitStats(containerId, splitName, frameCount, hist) {
 }
 
 async function loadHistory() {
-  const data = await fetchJson("/api/history");
+  const data = await fetchJson("/api/history?exp=baseline");
   state.history = data.history || [];
   setBadge(historyBadge, `History: ${data.exists ? "Loaded" : "Missing"}`, data.exists);
   historyPath.textContent = data.path || "";
@@ -366,3 +380,6 @@ bootstrap().catch((err) => {
   testPlayer.currentInfo.textContent = String(err);
 });
 
+window.addEventListener("resize", () => {
+  renderF1Chart(state.history || []);
+});

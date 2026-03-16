@@ -16,7 +16,14 @@ PROJECT_ROOT = VIS_ROOT.parent
 WEB_ROOT = VIS_ROOT / "web"
 DATA_ROOT = PROJECT_ROOT.parent / "vod-min"
 BASELINE_ROOT = PROJECT_ROOT / "baseline"
-HISTORY_PATH = BASELINE_ROOT / "outputs" / "vod_baseline" / "history.json"
+IMPROVE_ROOT = PROJECT_ROOT / "improve-v1"
+HISTORY_PATHS = {
+    "baseline": BASELINE_ROOT / "outputs" / "vod_baseline" / "history.json",
+    "centerpoint_v1": IMPROVE_ROOT / "outputs" / "vod_centerpoint_radar_v1" / "history.json",
+    "ablation_baseline_like": IMPROVE_ROOT / "outputs" / "ablation_baseline_like" / "history.json",
+    "ablation_baseline_post": IMPROVE_ROOT / "outputs" / "ablation_baseline_post" / "history.json",
+    "ablation_feature_enhanced": IMPROVE_ROOT / "outputs" / "ablation_feature_enhanced" / "history.json",
+}
 SPLIT_DIR = DATA_ROOT / "lidar" / "ImageSets"
 LABEL_DIR = DATA_ROOT / "lidar" / "training" / "label_2"
 IMAGE_DIR = DATA_ROOT / "lidar" / "training" / "image_2"
@@ -217,6 +224,7 @@ def dataset_summary() -> Dict:
         "paths": {
             "data_root": str(DATA_ROOT),
             "baseline_root": str(BASELINE_ROOT),
+            "improve_root": str(IMPROVE_ROOT),
         },
         "counts": {
             "images": len(list(IMAGE_DIR.glob("*.jpg"))) if IMAGE_DIR.exists() else 0,
@@ -237,16 +245,28 @@ def dataset_summary() -> Dict:
     }
 
 
-def read_history() -> Dict:
-    if not HISTORY_PATH.exists():
+def read_history(exp: str = "baseline") -> Dict:
+    history_path = HISTORY_PATHS.get(exp)
+    if history_path is None:
         return {
             "exists": False,
             "history": [],
             "latest": {},
             "best_mean_f1": {},
-            "path": str(HISTORY_PATH),
+            "path": "",
+            "experiment": exp,
+            "error": "unknown experiment",
         }
-    history = json.loads(HISTORY_PATH.read_text(encoding="utf-8"))
+    if not history_path.exists():
+        return {
+            "exists": False,
+            "history": [],
+            "latest": {},
+            "best_mean_f1": {},
+            "path": str(history_path),
+            "experiment": exp,
+        }
+    history = json.loads(history_path.read_text(encoding="utf-8"))
     latest = history[-1] if history else {}
     best = {}
     if history:
@@ -256,8 +276,26 @@ def read_history() -> Dict:
         "history": history,
         "latest": latest,
         "best_mean_f1": best,
-        "path": str(HISTORY_PATH),
+        "path": str(history_path),
+        "experiment": exp,
     }
+
+
+def list_experiments() -> Dict:
+    out = []
+    for exp, path in HISTORY_PATHS.items():
+        row = {"name": exp, "path": str(path), "exists": False, "epochs": 0, "latest_mean_f1": None}
+        if path.exists():
+            try:
+                history = json.loads(path.read_text(encoding="utf-8"))
+                row["exists"] = True
+                row["epochs"] = int(len(history))
+                if history:
+                    row["latest_mean_f1"] = float(history[-1].get("mean_f1", 0.0))
+            except Exception:
+                pass
+        out.append(row)
+    return {"experiments": out}
 
 
 class RadarVisHandler(SimpleHTTPRequestHandler):
@@ -297,7 +335,12 @@ class RadarVisHandler(SimpleHTTPRequestHandler):
             return
 
         if path == "/api/history":
-            self._send_json(read_history())
+            exp = query.get("exp", ["baseline"])[0].strip()
+            self._send_json(read_history(exp))
+            return
+
+        if path == "/api/experiments":
+            self._send_json(list_experiments())
             return
 
         if path == "/api/samples":
@@ -398,8 +441,12 @@ class RadarVisHandler(SimpleHTTPRequestHandler):
 
         if path == "/":
             self.path = "/index.html"
+        if path == "/baseline-results":
+            self.path = "/baseline_results.html"
         if path == "/split-player":
             self.path = "/split_player.html"
+        if path == "/v1-results":
+            self.path = "/v1_results.html"
         return super().do_GET()
 
 
