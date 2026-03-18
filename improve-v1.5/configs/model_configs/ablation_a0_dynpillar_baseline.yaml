@@ -1,0 +1,34 @@
+_BASE_CONFIG_: configs/model_configs/vod_centerpoint_radar_v1_5.yaml
+
+DATA_CONFIG:
+  APPEND_VELOCITY_TO_GT_BOXES: False
+
+MODEL:
+  VFE:
+    NAME: DynPillarVFE
+    WITH_DISTANCE: False
+    USE_ABSLOTE_XYZ: True
+    USE_NORM: True
+    NUM_FILTERS: [64, 64]
+
+  DENSE_HEAD:
+    SEPARATE_HEAD_CFG:
+      HEAD_ORDER: ['center', 'center_z', 'dim', 'rot']
+      HEAD_DICT:
+        center: {out_channels: 2, num_conv: 2}
+        center_z: {out_channels: 1, num_conv: 2}
+        dim: {out_channels: 3, num_conv: 2}
+        rot: {out_channels: 2, num_conv: 2}
+    LOSS_CONFIG:
+      LOSS_WEIGHTS:
+        cls_weight: 1.0
+        loc_weight: 2.0
+        code_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    POST_PROCESSING:
+      SCORE_THRESH: 0.10
+      NMS_CONFIG:
+        NMS_TYPE: class_agnostic_nms
+        NMS_IMPL: nms_gpu
+        NMS_THRESH: 0.7
+        NMS_PRE_MAXSIZE: 4096
+        NMS_POST_MAXSIZE: 300

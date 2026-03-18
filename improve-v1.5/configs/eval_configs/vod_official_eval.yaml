@@ -1,0 +1,4 @@
+TASK: vod_official_eval
+DESCRIPTION: "Export OpenPCDet predictions to KITTI-like text files for VoD devkit"
+OUTPUT_FORMAT: kitti_label_2
+SUPPORTED_CLASSES: ['Car', 'Pedestrian', 'Cyclist']

@@ -1,0 +1,19 @@
+_BASE_CONFIG_: configs/model_configs/vod_centerpoint_radar_v1_5.yaml
+
+DATA_CONFIG:
+  APPEND_VELOCITY_TO_GT_BOXES: False
+
+MODEL:
+  DENSE_HEAD:
+    SEPARATE_HEAD_CFG:
+      HEAD_ORDER: ['center', 'center_z', 'dim', 'rot']
+      HEAD_DICT:
+        center: {out_channels: 2, num_conv: 2}
+        center_z: {out_channels: 1, num_conv: 2}
+        dim: {out_channels: 3, num_conv: 2}
+        rot: {out_channels: 2, num_conv: 2}
+    LOSS_CONFIG:
+      LOSS_WEIGHTS:
+        cls_weight: 1.0
+        loc_weight: 2.0
+        code_weights: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

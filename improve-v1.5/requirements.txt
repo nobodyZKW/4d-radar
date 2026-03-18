@@ -1,0 +1,17 @@
+# Core runtime
+numpy>=1.23
+scipy>=1.9
+numba>=0.57
+pyyaml>=6.0
+easydict>=1.10
+tqdm>=4.65
+pillow>=10.0
+scikit-image>=0.21
+tensorboardX>=2.6
+
+# Deep learning
+# Install torch/cu118 or matching CUDA build manually first.
+torch>=2.1
+
+# Optional for A0 DynPillar baseline (torch_scatter backend)
+torch-scatter>=2.1

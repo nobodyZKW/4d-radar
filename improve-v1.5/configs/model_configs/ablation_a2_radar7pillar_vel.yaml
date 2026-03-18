@@ -1,0 +1,15 @@
+_BASE_CONFIG_: configs/model_configs/vod_centerpoint_radar_v1_5.yaml
+
+DATA_CONFIG:
+  APPEND_VELOCITY_TO_GT_BOXES: True
+
+MODEL:
+  DENSE_HEAD:
+    POST_PROCESSING:
+      SCORE_THRESH: 0.12
+      NMS_CONFIG:
+        NMS_TYPE: class_agnostic_nms
+        NMS_IMPL: nms_gpu
+        NMS_THRESH: 0.5
+        NMS_PRE_MAXSIZE: 4096
+        NMS_POST_MAXSIZE: 300

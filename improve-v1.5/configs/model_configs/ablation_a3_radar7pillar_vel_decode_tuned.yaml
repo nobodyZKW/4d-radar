@@ -1,0 +1,12 @@
+_BASE_CONFIG_: configs/model_configs/ablation_a2_radar7pillar_vel.yaml
+
+MODEL:
+  DENSE_HEAD:
+    POST_PROCESSING:
+      SCORE_THRESH: 0.18
+      MAX_OBJ_PER_SAMPLE: 500
+      NMS_CONFIG:
+        NMS_TYPE: class_specific_nms
+        NMS_THRESH: [0.6, 0.45, 0.5]
+        NMS_PRE_MAXSIZE: [4096, 2048, 2048]
+        NMS_POST_MAXSIZE: [300, 200, 200]

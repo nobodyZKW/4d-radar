@@ -1,0 +1,20 @@
+﻿# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Experiment outputs
+outputs/
+
+# OpenPCDet build/runtime artifacts
+external/OpenPCDet/output/
+external/OpenPCDet/build/
+external/OpenPCDet/dist/
+external/OpenPCDet/*.egg-info/
+
+# TensorBoard
+runs/
+
+# IDE
+.idea/
+.vscode/
