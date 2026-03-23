@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>实验对比</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>实验对比</h1>
+        <div class="hint">quick 与 official 双轨对比，含配置差异摘要。</div>
+      </div>
+      <nav class="nav">
+        <a href="/">首页</a>
+        <a href="/experiments">实验总览</a>
+        <a href="/compare">对比</a>
+        <a href="/sample-viewer">样本查看器</a>
+        <a href="/v1_5-results">v1.5 专题</a>
+      </nav>
+    </header>
+
+    <section class="panel">
+      <div class="toolbar">
+        <label>快速选择
+          <select id="preset">
+            <option value="">--</option>
+            <option value="baseline_main,improve_v1_main,improve_v1_5_main">baseline vs v1 vs v1.5</option>
+            <option value="improve_v1_5_A0,improve_v1_5_A1,improve_v1_5_A2,improve_v1_5_A3,improve_v1_5_A4">A0~A4</option>
+          </select>
+        </label>
+        <button id="applyPresetBtn">应用</button>
+      </div>
+      <div id="expSelector" class="grid cols-4"></div>
+      <div class="toolbar" style="margin-top:10px">
+        <button id="runCompareBtn">开始对比</button>
+        <a id="viewerLink" href="/sample-viewer">去样本查看器</a>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Quick Metrics</h2>
+      <div id="quickTable"></div>
+      <div id="curveChart" class="chart" style="margin-top:10px"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Official Metrics</h2>
+      <div id="officialTable"></div>
+    </section>
+
+    <section class="panel">
+      <h2>配置差异摘要</h2>
+      <div id="configDiff"></div>
+    </section>
+  </div>
+  <script src="/common.js"></script>
+  <script src="/compare.js"></script>
+</body>
+</html>

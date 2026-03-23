@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Improve-v1.5 专题</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>Improve-v1.5 专题页</h1>
+        <div class="hint">主实验、A0~A4、特征消融、速度监督消融、decode 调参、official 指标。</div>
+      </div>
+      <nav class="nav">
+        <a href="/">首页</a>
+        <a href="/experiments">实验总览</a>
+        <a href="/compare">对比</a>
+        <a href="/sample-viewer">样本查看器</a>
+        <a href="/v1_5-results">v1.5 专题</a>
+      </nav>
+    </header>
+
+    <section class="panel">
+      <h2>主实验摘要</h2>
+      <div id="mainQuick" class="metric-grid"></div>
+      <div id="mainOfficial" class="metric-grid" style="margin-top:10px"></div>
+    </section>
+
+    <section class="panel">
+      <h2>A0~A4 消融</h2>
+      <div id="a0a4Table"></div>
+    </section>
+
+    <section class="panel">
+      <h2>特征开关消融</h2>
+      <div id="featureTable"></div>
+    </section>
+
+    <section class="panel">
+      <h2>速度监督消融</h2>
+      <div id="velTable"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Decode / NMS 调参</h2>
+      <div id="decodeTable"></div>
+    </section>
+
+    <section class="panel">
+      <h2>相关入口</h2>
+      <div class="row">
+        <a href="/experiments/improve_v1_5_main">主实验详情</a>
+        <a href="/compare?ids=improve_v1_5_A0,improve_v1_5_A1,improve_v1_5_A2,improve_v1_5_A3,improve_v1_5_A4">A0~A4 对比</a>
+        <a href="/sample-viewer?exp=improve_v1_5_main">样本查看器</a>
+      </div>
+    </section>
+  </div>
+  <script src="/common.js"></script>
+  <script src="/v1_5_results.js"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>样本查看器</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>样本级预测对比查看器</h1>
+        <div class="hint">左侧图像，右侧 BEV。支持多模型叠加/并排、类别筛选、阈值调节、自动播放。</div>
+      </div>
+      <nav class="nav">
+        <a href="/">首页</a>
+        <a href="/experiments">实验总览</a>
+        <a href="/compare">对比</a>
+        <a href="/sample-viewer">样本查看器</a>
+        <a href="/v1_5-results">v1.5 专题</a>
+      </nav>
+    </header>
+
+    <section class="panel">
+      <div class="toolbar">
+        <label>split
+          <select id="split">
+            <option value="train">train</option>
+            <option value="val" selected>val</option>
+            <option value="test">test</option>
+            <option value="train_val">train_val</option>
+          </select>
+        </label>
+        <label>sample
+          <select id="sampleSelect"></select>
+        </label>
+        <button id="prevBtn">上一帧</button>
+        <button id="nextBtn">下一帧</button>
+        <button id="playBtn">播放</button>
+        <label>FPS
+          <select id="playFps">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="5">5</option>
+            <option value="8">8</option>
+          </select>
+        </label>
+        <label><input id="loopPlay" type="checkbox" checked />循环</label>
+        <span id="playStatus" class="pill">已暂停</span>
+
+        <label>score >= <input id="scoreThresh" type="range" min="0" max="1" step="0.01" value="0.15" /></label>
+        <span id="scoreValue" class="pill">0.15</span>
+        <label>类别
+          <select id="classFilter">
+            <option value="">全部</option>
+            <option value="Car">Car</option>
+            <option value="Pedestrian">Pedestrian</option>
+            <option value="Cyclist">Cyclist</option>
+          </select>
+        </label>
+        <label>视图
+          <select id="viewMode">
+            <option value="overlay">overlay</option>
+            <option value="grid">grid</option>
+          </select>
+        </label>
+        <label><input id="showGt" type="checkbox" checked />显示 GT</label>
+      </div>
+      <div id="expSelector" class="grid cols-4"></div>
+    </section>
+
+    <section class="panel">
+      <div class="split-view">
+        <div>
+          <h3>图像视图</h3>
+          <div class="image-wrap"><img id="sampleImage" alt="sample image" /></div>
+          <div id="sampleMeta" class="small" style="margin-top:8px"></div>
+        </div>
+        <div>
+          <h3>BEV 视图</h3>
+          <div id="bevSingle" class="bev-wrap"><canvas id="bevCanvas" width="800" height="520"></canvas></div>
+          <div id="bevGrid" class="grid cols-2" style="display:none"></div>
+          <div id="bevLegend" class="legend"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="/common.js"></script>
+  <script src="/sample_viewer.js"></script>
+</body>
+</html>

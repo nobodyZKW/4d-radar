@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Visualization runtime cache
+visualization/artifacts/
+visualization/__pycache__/

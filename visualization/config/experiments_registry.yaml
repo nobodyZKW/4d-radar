@@ -1,0 +1,247 @@
+﻿experiments:
+  - id: baseline_main
+    display_name: Baseline Main
+    family: baseline
+    status: active
+    description: Baseline单模型（手工BEV + 轻量Center-based head）
+    history_path: baseline/outputs/vod_baseline/history.json
+    latest_metrics_path: baseline/results/latest_metrics.json
+    config_snapshot_path: baseline/configs/vod_baseline.yaml
+    official_eval_path: ""
+    ablation_summary_path: ""
+    decode_tuning_path: ""
+    prediction_dir: baseline/outputs/viz_samples/baseline_main
+    sample_source: vod-min
+    quick_metrics_type: history_json
+    official_metrics_type: none
+    tags: [main, quick]
+    color: "#3a86ff"
+    sort_order: 10
+
+  - id: improve_v1_main
+    display_name: Improve-v1 Main
+    family: improve-v1
+    status: active
+    description: improve-v1（CenterPoint化 + radar feature增强 + motion branch）
+    history_path: improve-v1/outputs/vod_centerpoint_radar_v1/history.json
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1/configs/vod_centerpoint_radar_v1.yaml
+    official_eval_path: ""
+    ablation_summary_path: ""
+    decode_tuning_path: ""
+    prediction_dir: improve-v1/outputs/viz_samples/improve_v1_main
+    sample_source: vod-min
+    quick_metrics_type: history_json
+    official_metrics_type: none
+    tags: [main, ablation]
+    color: "#2a9d8f"
+    sort_order: 20
+
+  - id: improve_v1_ablation_baseline_like
+    display_name: Improve-v1 Ablation Baseline-like
+    family: improve-v1
+    status: draft
+    description: improve-v1消融：baseline-like配置
+    history_path: improve-v1/outputs/ablation_baseline_like/history.json
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1/configs/vod_ablation_baseline_like.yaml
+    official_eval_path: ""
+    ablation_summary_path: ""
+    decode_tuning_path: ""
+    prediction_dir: improve-v1/outputs/viz_samples/ablation_baseline_like
+    sample_source: vod-min
+    quick_metrics_type: history_json
+    official_metrics_type: none
+    tags: [ablation, v1]
+    color: "#2a9d8f"
+    sort_order: 21
+
+  - id: improve_v1_ablation_baseline_post
+    display_name: Improve-v1 Ablation Baseline+Post
+    family: improve-v1
+    status: draft
+    description: improve-v1消融：仅后处理增强
+    history_path: improve-v1/outputs/ablation_baseline_post/history.json
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1/configs/vod_ablation_baseline_post.yaml
+    official_eval_path: ""
+    ablation_summary_path: ""
+    decode_tuning_path: ""
+    prediction_dir: improve-v1/outputs/viz_samples/ablation_baseline_post
+    sample_source: vod-min
+    quick_metrics_type: history_json
+    official_metrics_type: none
+    tags: [ablation, v1]
+    color: "#2a9d8f"
+    sort_order: 22
+
+  - id: improve_v1_ablation_feature_enhanced
+    display_name: Improve-v1 Ablation Feature Enhanced
+    family: improve-v1
+    status: draft
+    description: improve-v1消融：特征增强
+    history_path: improve-v1/outputs/ablation_feature_enhanced/history.json
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1/configs/vod_ablation_feature_enhanced.yaml
+    official_eval_path: ""
+    ablation_summary_path: ""
+    decode_tuning_path: ""
+    prediction_dir: improve-v1/outputs/viz_samples/ablation_feature_enhanced
+    sample_source: vod-min
+    quick_metrics_type: history_json
+    official_metrics_type: none
+    tags: [ablation, v1]
+    color: "#2a9d8f"
+    sort_order: 23
+
+  - id: improve_v1_5_main
+    display_name: Improve-v1.5 Main (OpenPCDet)
+    family: improve-v1.5
+    status: active
+    description: OpenPCDet主线：VodRadarDataset + Radar7PillarVFE + CenterPoint + vel supervision
+    history_path: improve-v1.5/external/OpenPCDet/output/vod_centerpoint_radar_v1_5/v1_5_workers0/train_20260317-162902.log
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1.5/configs/model_configs/vod_centerpoint_radar_v1_5.yaml
+    official_eval_path: improve-v1.5/external/OpenPCDet/output/vod_centerpoint_radar_v1_5/v1_5_workers0/eval/eval_with_train/epoch_30/test/result.pkl
+    ablation_summary_path: improve-v1.5/outputs/ablations/ablation_summary.csv
+    decode_tuning_path: improve-v1.5/outputs/ablations/decode_tuning.json
+    prediction_dir: improve-v1.5/outputs/viz_samples/v1_5_workers0
+    sample_source: vod-min
+    quick_metrics_type: openpcdet_log
+    official_metrics_type: kitti_eval_log
+    tags: [main, openpcdet, official]
+    color: "#ff6b35"
+    sort_order: 30
+
+  - id: improve_v1_5_A0
+    display_name: Improve-v1.5 A0 DynPillar Baseline
+    family: improve-v1.5
+    status: draft
+    description: A0消融
+    history_path: ""
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1.5/configs/model_configs/ablation_a0_dynpillar_baseline.yaml
+    official_eval_path: ""
+    ablation_summary_path: improve-v1.5/outputs/ablations/ablation_summary.csv
+    decode_tuning_path: ""
+    prediction_dir: improve-v1.5/outputs/viz_samples/A0
+    sample_source: vod-min
+    quick_metrics_type: ablation_row
+    official_metrics_type: none
+    tags: [ablation, A0]
+    color: "#ff6b35"
+    sort_order: 31
+
+  - id: improve_v1_5_A1
+    display_name: Improve-v1.5 A1 Radar7Pillar
+    family: improve-v1.5
+    status: draft
+    description: A1消融
+    history_path: ""
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1.5/configs/model_configs/ablation_a1_radar7pillar.yaml
+    official_eval_path: ""
+    ablation_summary_path: improve-v1.5/outputs/ablations/ablation_summary.csv
+    decode_tuning_path: ""
+    prediction_dir: improve-v1.5/outputs/viz_samples/A1
+    sample_source: vod-min
+    quick_metrics_type: ablation_row
+    official_metrics_type: none
+    tags: [ablation, A1]
+    color: "#ff6b35"
+    sort_order: 32
+
+  - id: improve_v1_5_A2
+    display_name: Improve-v1.5 A2 + Velocity Supervision
+    family: improve-v1.5
+    status: draft
+    description: A2消融
+    history_path: ""
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1.5/configs/model_configs/ablation_a2_radar7pillar_vel.yaml
+    official_eval_path: ""
+    ablation_summary_path: improve-v1.5/outputs/ablations/ablation_summary.csv
+    decode_tuning_path: ""
+    prediction_dir: improve-v1.5/outputs/viz_samples/A2
+    sample_source: vod-min
+    quick_metrics_type: ablation_row
+    official_metrics_type: none
+    tags: [ablation, A2, velocity]
+    color: "#ff6b35"
+    sort_order: 33
+
+  - id: improve_v1_5_A3
+    display_name: Improve-v1.5 A3 + Decode Tuning
+    family: improve-v1.5
+    status: draft
+    description: A3消融
+    history_path: ""
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1.5/configs/model_configs/ablation_a3_radar7pillar_vel_decode_tuned.yaml
+    official_eval_path: ""
+    ablation_summary_path: improve-v1.5/outputs/ablations/ablation_summary.csv
+    decode_tuning_path: improve-v1.5/outputs/ablations/decode_tuning.json
+    prediction_dir: improve-v1.5/outputs/viz_samples/A3
+    sample_source: vod-min
+    quick_metrics_type: ablation_row
+    official_metrics_type: none
+    tags: [ablation, A3, decode]
+    color: "#ff6b35"
+    sort_order: 34
+
+  - id: improve_v1_5_A4
+    display_name: Improve-v1.5 A4 Full
+    family: improve-v1.5
+    status: draft
+    description: A4消融
+    history_path: ""
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1.5/configs/model_configs/ablation_a4_full.yaml
+    official_eval_path: ""
+    ablation_summary_path: improve-v1.5/outputs/ablations/ablation_summary.csv
+    decode_tuning_path: improve-v1.5/outputs/ablations/decode_tuning.json
+    prediction_dir: improve-v1.5/outputs/viz_samples/A4
+    sample_source: vod-min
+    quick_metrics_type: ablation_row
+    official_metrics_type: none
+    tags: [ablation, A4, full]
+    color: "#ff6b35"
+    sort_order: 35
+
+  - id: improve_v1_5_feat_ablation
+    display_name: Improve-v1.5 Feature Ablations
+    family: improve-v1.5
+    status: active
+    description: XYZ/RCS/VR/VR_COMP/TIME特征子消融汇总
+    history_path: ""
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1.5/configs/model_configs/ablation_a4_full.yaml
+    official_eval_path: ""
+    ablation_summary_path: improve-v1.5/outputs/ablations/ablation_summary.csv
+    decode_tuning_path: ""
+    prediction_dir: ""
+    sample_source: vod-min
+    quick_metrics_type: ablation_table
+    official_metrics_type: none
+    tags: [ablation, feature]
+    color: "#ff6b35"
+    sort_order: 36
+
+  - id: improve_v1_5_vel_ablation
+    display_name: Improve-v1.5 Velocity Supervision Ablations
+    family: improve-v1.5
+    status: active
+    description: no vel / weak heading / robust lstsq 对比
+    history_path: ""
+    latest_metrics_path: ""
+    config_snapshot_path: improve-v1.5/configs/model_configs/ablation_a2_radar7pillar_vel.yaml
+    official_eval_path: ""
+    ablation_summary_path: improve-v1.5/outputs/ablations/ablation_summary.csv
+    decode_tuning_path: ""
+    prediction_dir: ""
+    sample_source: vod-min
+    quick_metrics_type: ablation_table
+    official_metrics_type: none
+    tags: [ablation, velocity]
+    color: "#ff6b35"
+    sort_order: 37

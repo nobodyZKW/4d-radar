@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ablations</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>Ablation 汇总</h1>
+        <div class="hint">按实验家族查看消融结果。</div>
+      </div>
+      <nav class="nav">
+        <a href="/">首页</a>
+        <a href="/experiments">实验总览</a>
+        <a href="/compare">对比</a>
+        <a href="/sample-viewer">样本查看器</a>
+        <a href="/v1_5-results">v1.5 专题</a>
+      </nav>
+    </header>
+    <section class="panel">
+      <div class="toolbar">
+        <label>family <input id="family" value="improve-v1.5" /></label>
+        <button id="runBtn">查询</button>
+      </div>
+      <div id="table"></div>
+    </section>
+  </div>
+  <script src="/common.js"></script>
+  <script src="/ablations.js"></script>
+</body>
+</html>

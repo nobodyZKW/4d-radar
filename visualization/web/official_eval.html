@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Official Eval</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>Official 指标查看</h1>
+        <div class="hint">从实验详情中抽取官方评估指标。</div>
+      </div>
+      <nav class="nav">
+        <a href="/">首页</a>
+        <a href="/experiments">实验总览</a>
+        <a href="/compare">对比</a>
+        <a href="/sample-viewer">样本查看器</a>
+        <a href="/v1_5-results">v1.5 专题</a>
+      </nav>
+    </header>
+    <section class="panel">
+      <div class="toolbar">
+        <label>exp_id <input id="expId" value="improve_v1_5_main" /></label>
+        <button id="runBtn">加载</button>
+      </div>
+      <div id="summary" class="metric-grid"></div>
+      <div id="table" style="margin-top:10px"></div>
+    </section>
+  </div>
+  <script src="/common.js"></script>
+  <script src="/official_eval.js"></script>
+</body>
+</html>

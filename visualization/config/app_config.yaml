@@ -1,0 +1,19 @@
+﻿app:
+  title: 4D Radar Unified Experiment Dashboard
+  host: 127.0.0.1
+  port: 8090
+  default_split: val
+
+paths:
+  project_root: ".."
+  data_root: "../../vod-min"
+  web_root: "web"
+  artifact_root: "artifacts"
+
+sample_viewer:
+  x_min: 0.0
+  x_max: 60.0
+  y_min: -30.0
+  y_max: 30.0
+  max_points_default: 8000
+  max_points_limit: 50000

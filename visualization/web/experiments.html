@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>实验总览</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>实验总览</h1>
+        <div class="hint">支持 family / status / tags 筛选，支持按指标和时间排序。</div>
+      </div>
+      <nav class="nav">
+        <a href="/">首页</a>
+        <a href="/experiments">实验总览</a>
+        <a href="/compare">对比</a>
+        <a href="/sample-viewer">样本查看器</a>
+        <a href="/v1_5-results">v1.5 专题</a>
+      </nav>
+    </header>
+
+    <section class="panel">
+      <div class="toolbar">
+        <label>family <select id="family"></select></label>
+        <label>status
+          <select id="status">
+            <option value="">all</option>
+            <option value="active">active</option>
+            <option value="draft">draft</option>
+            <option value="archived">archived</option>
+          </select>
+        </label>
+        <label>tags <input id="tags" placeholder="例如 ablation,official" /></label>
+        <label>sort
+          <select id="sort">
+            <option value="sort_order">sort_order</option>
+            <option value="time">time</option>
+            <option value="metric">metric</option>
+            <option value="family">family</option>
+          </select>
+        </label>
+        <button id="applyBtn">应用筛选</button>
+      </div>
+      <div id="resultCards" class="cards"></div>
+    </section>
+  </div>
+  <script src="/common.js"></script>
+  <script src="/experiments.js"></script>
+</body>
+</html>

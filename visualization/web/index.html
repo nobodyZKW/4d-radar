@@ -3,56 +3,44 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>4D Radar Main Dashboard</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <title>4D Radar 实验看板</title>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div class="bg-grid"></div>
-  <main class="layout">
-    <header class="hero">
+  <div class="app">
+    <header class="topbar">
       <div>
-        <p class="kicker">4D RADAR EXPERIMENT SITE</p>
-        <h1>主界面</h1>
-        <p class="sub">Baseline 和 v1 结果分离展示。请从下面入口进入对应页面。</p>
+        <h1>4D Radar 统一实验看板</h1>
+        <div class="hint" id="appInfo">加载中...</div>
       </div>
-      <div class="status-row">
-        <span id="healthBadge" class="badge badge-warn">Server: Checking</span>
-      </div>
+      <nav class="nav">
+        <a href="/">首页</a>
+        <a href="/experiments">实验总览</a>
+        <a href="/compare">对比</a>
+        <a href="/sample-viewer">样本查看器</a>
+        <a href="/v1_5-results">v1.5 专题</a>
+      </nav>
     </header>
 
     <section class="panel">
-      <h2>页面入口</h2>
-      <div class="portal-grid">
-        <article class="portal-card">
-          <h3>Baseline 结果</h3>
-          <p>展示 baseline 的训练曲线、最新指标、数据统计和 train/test 播放器。</p>
-          <div id="baselineMeta" class="portal-meta">loading...</div>
-          <a class="portal-btn" href="/baseline-results">进入 Baseline 界面</a>
-        </article>
-
-        <article class="portal-card">
-          <h3>V1 结果</h3>
-          <p>展示 centerpoint_radar_v1 与消融实验结果，支持实验切换与曲线对比。</p>
-          <div id="v1Meta" class="portal-meta">loading...</div>
-          <a class="portal-btn" href="/v1-results">进入 V1 界面</a>
-        </article>
-
-        <article class="portal-card">
-          <h3>50/50 可视化播放器</h3>
-          <p>上下两个播放器：train 与 test。每个播放器左图像+标签，右 BEV。</p>
-          <div id="playerMeta" class="portal-meta">实时样本浏览入口</div>
-          <a class="portal-btn" href="/split-player">进入播放器</a>
-        </article>
-      </div>
+      <h2>实验家族概览</h2>
+      <div class="cards" id="familyCards"></div>
     </section>
 
     <section class="panel">
-      <h2>数据集概览</h2>
-      <div id="datasetGrid" class="dataset-grid"></div>
+      <h2>最近实验</h2>
+      <div id="recentList"></div>
     </section>
-  </main>
 
-  <script src="./main.js"></script>
+    <section class="panel">
+      <h2>推荐对比入口</h2>
+      <div class="row">
+        <a href="/compare?ids=baseline_main,improve_v1_main,improve_v1_5_main">baseline vs v1 vs v1.5</a>
+        <a href="/compare?ids=improve_v1_5_A0,improve_v1_5_A1,improve_v1_5_A2,improve_v1_5_A3,improve_v1_5_A4">A0~A4 消融</a>
+      </div>
+    </section>
+  </div>
+  <script src="/common.js"></script>
+  <script src="/index.js"></script>
 </body>
 </html>
-
