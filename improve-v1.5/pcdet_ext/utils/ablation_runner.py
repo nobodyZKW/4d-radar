@@ -88,6 +88,14 @@ DEFAULT_EXPERIMENTS = [
 ]
 
 
+PRESET_EXP_IDS = {
+    "a0_a2": ["A0", "A1", "A2"],
+    "a0_a4": ["A0", "A1", "A2", "A3", "A4"],
+    "feature": ["feat_xyz_only", "feat_xyz_rcs", "feat_xyz_rcs_vr", "feat_xyz_rcs_vr_vrcomp"],
+    "velocity": ["vel_none", "vel_weak_heading", "vel_robust_lstsq"],
+}
+
+
 def resolve_paths(root: Path, cfg_rel: str, extra_tag: str) -> Tuple[Path, Path]:
     cfg_path = (root / cfg_rel).resolve()
     cfg_name = cfg_path.stem
@@ -160,6 +168,23 @@ def evaluate_cfg_ckpt(root: Path, cfg_path: Path, ckpt_path: Path, workers: int,
     return metrics
 
 
+def select_experiments(experiments: List[Dict], exp_ids: List[str]) -> List[Dict]:
+    if not exp_ids:
+        return experiments
+
+    exp_map = {str(x["id"]): x for x in experiments}
+    selected = []
+    missing = []
+    for exp_id in exp_ids:
+        if exp_id in exp_map:
+            selected.append(exp_map[exp_id])
+        else:
+            missing.append(exp_id)
+    if missing:
+        raise ValueError(f"Unknown experiment ids: {missing}")
+    return selected
+
+
 def write_summary(rows: List[Dict], csv_path: Path, md_path: Path):
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = sorted({k for r in rows for k in r.keys()})
@@ -185,6 +210,10 @@ def main():
     parser.add_argument("--extra-tag-prefix", type=str, default="ablation")
     parser.add_argument("--output-dir", type=str, default="outputs/ablations")
     parser.add_argument("--experiments-json", type=str, default="")
+    parser.add_argument("--preset", type=str, default="")
+    parser.add_argument("--exp-ids", type=str, default="")
+    parser.add_argument("--skip-missing-ckpt", action="store_true")
+    parser.add_argument("--list", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -197,6 +226,22 @@ def main():
     else:
         experiments = DEFAULT_EXPERIMENTS
 
+    if args.preset:
+        preset_key = args.preset.strip().lower()
+        if preset_key not in PRESET_EXP_IDS:
+            raise ValueError(f"Unknown preset: {args.preset}. Available presets: {sorted(PRESET_EXP_IDS.keys())}")
+        experiments = select_experiments(experiments, PRESET_EXP_IDS[preset_key])
+
+    if args.exp_ids.strip():
+        exp_ids = [x.strip() for x in args.exp_ids.split(",") if x.strip()]
+        experiments = select_experiments(experiments, exp_ids)
+
+    if args.list:
+        print("Available experiment ids:")
+        for exp in experiments:
+            print(f"- {exp['id']}: {exp['cfg']}")
+        return
+
     rows = []
     for exp in experiments:
         exp_id = exp["id"]
@@ -207,19 +252,49 @@ def main():
         cfg_path, ckpt_dir = resolve_paths(root, cfg_rel, extra_tag)
         print(f"[Ablation] {exp_id} -> cfg={cfg_path}")
         if args.dry_run:
-            rows.append({"id": exp_id, "cfg": cfg_rel, "ckpt": "", "quick/mean_f1": 0.0, "note": "dry-run"})
+            rows.append(
+                {
+                    "id": exp_id,
+                    "cfg": cfg_rel,
+                    "ckpt": "",
+                    "quick/mean_f1": 0.0,
+                    "note": "dry-run",
+                    "extra_tag": extra_tag,
+                    "expected_ckpt_dir": str(ckpt_dir),
+                }
+            )
             continue
 
         if args.run_train:
             run_train(root=root, cfg_path=cfg_path, extra_tag=extra_tag, workers=args.workers, epochs=args.epochs, set_cfgs=set_cfgs)
 
-        ckpt_path = find_latest_ckpt(ckpt_dir)
+        try:
+            ckpt_path = find_latest_ckpt(ckpt_dir)
+        except FileNotFoundError:
+            if not args.skip_missing_ckpt:
+                raise
+            row = {
+                "id": exp_id,
+                "cfg": cfg_rel,
+                "ckpt": "",
+                "quick/mean_f1": 0.0,
+                "note": "missing-ckpt",
+                "extra_tag": extra_tag,
+                "expected_ckpt_dir": str(ckpt_dir),
+            }
+            rows.append(row)
+            json_path = output_dir / f"{exp_id}.json"
+            json_path.write_text(json.dumps(row, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(f"[WARN] Missing checkpoint for {exp_id}, skipped. Expected: {ckpt_dir}")
+            continue
+
         metrics = evaluate_cfg_ckpt(root=root, cfg_path=cfg_path, ckpt_path=ckpt_path, workers=args.workers, set_cfgs=set_cfgs)
 
         row = {
             "id": exp_id,
             "cfg": cfg_rel,
             "ckpt": str(ckpt_path),
+            "extra_tag": extra_tag,
             **{k: float(v) for k, v in metrics.items() if isinstance(v, (int, float))},
         }
         rows.append(row)

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "A0",
+    "cfg": "configs/model_configs/ablation_a0_dynpillar_baseline.yaml",
+    "set": []
+  },
+  {
+    "id": "A1",
+    "cfg": "configs/model_configs/ablation_a1_radar7pillar.yaml",
+    "set": []
+  },
+  {
+    "id": "A2",
+    "cfg": "configs/model_configs/ablation_a2_radar7pillar_vel.yaml",
+    "set": []
+  }
+]
