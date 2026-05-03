@@ -260,7 +260,13 @@ class VodRadarDataset(DatasetTemplate):
             return vel, {
                 "num_valid_vel_boxes": 0.0,
                 "num_weak_vel_boxes": 0.0,
+                "num_strong_vel_boxes": 0.0,
+                "num_invalid_vel_boxes": float(gt_boxes_lidar.shape[0]),
+                "num_total_gt_boxes": float(gt_boxes_lidar.shape[0]),
                 "vel_fit_residual_mean": 0.0,
+                "velocity_branch_activation_ratio": 0.0,
+                "velocity_weak_ratio": 0.0,
+                "velocity_strong_ratio": 0.0,
             }
 
         vel_targets, _, stats = self.velocity_estimator.estimate_for_boxes(

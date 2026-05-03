@@ -60,7 +60,7 @@
             <option value="Cyclist">Cyclist</option>
           </select>
         </label>
-        <label>视图
+        <label>BEV
           <select id="viewMode">
             <option value="overlay">overlay</option>
             <option value="grid">grid</option>
@@ -86,8 +86,43 @@
         </div>
       </div>
     </section>
+
+    <section class="panel">
+      <div class="row section-head">
+        <h3>3D 点云视图</h3>
+        <div class="toolbar compact-toolbar">
+          <label>着色
+            <select id="pointColorMode">
+              <option value="height" selected>height</option>
+              <option value="doppler">doppler</option>
+            </select>
+          </label>
+          <label>点大小 <input id="pointSize" type="range" min="0.03" max="0.22" step="0.01" value="0.08" /></label>
+          <label>相机
+            <select id="cameraPreset">
+              <option value="perspective" selected>perspective</option>
+              <option value="top">top</option>
+              <option value="side">side</option>
+            </select>
+          </label>
+          <label><input id="show3dGt" type="checkbox" checked />GT</label>
+          <label><input id="show3dPred" type="checkbox" checked />预测</label>
+          <span id="point3dStatus" class="pill">待加载</span>
+        </div>
+      </div>
+      <div id="point3dMount" class="point3d-wrap"></div>
+      <div id="point3dLegend" class="legend"></div>
+    </section>
   </div>
   <script src="/common.js"></script>
-  <script src="/sample_viewer.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three/three.module.js",
+        "three/addons/controls/OrbitControls.js": "/vendor/three/OrbitControls.js"
+      }
+    }
+  </script>
+  <script type="module" src="/sample_viewer.js"></script>
 </body>
 </html>

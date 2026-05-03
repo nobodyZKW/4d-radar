@@ -35,6 +35,7 @@ RADAR_FEATURE_INDEX:
   time: 6
 
 VELOCITY_SUPERVISION:
+  SUPERVISION_MODE: robust  # robust | weak_only | disabled
   MIN_POINTS: 3
   MAX_SPEED: 35.0
   MAX_RESIDUAL: 2.5

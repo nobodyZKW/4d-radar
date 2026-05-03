@@ -114,6 +114,11 @@ a:hover {
   align-items: center;
 }
 
+.section-head {
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
 .pill {
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -193,6 +198,10 @@ a:hover {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+.compact-toolbar {
+  margin-bottom: 0;
 }
 
 .toolbar input,
@@ -300,6 +309,21 @@ th {
   overflow: hidden;
 }
 
+.point3d-wrap {
+  position: relative;
+  height: min(68vh, 720px);
+  min-height: 420px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #05070d;
+  overflow: hidden;
+}
+
+.point3d-wrap canvas {
+  width: 100%;
+  height: 100%;
+}
+
 canvas {
   display: block;
   width: 100%;
@@ -346,5 +370,10 @@ canvas {
   .grid.cols-4,
   .metric-grid {
     grid-template-columns: 1fr;
+  }
+
+  .point3d-wrap {
+    height: 58vh;
+    min-height: 360px;
   }
 }

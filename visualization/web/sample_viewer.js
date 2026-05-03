@@ -1,4 +1,7 @@
 ﻿const BEV_RANGE = { xMin: 0, xMax: 60, yMin: -30, yMax: 30 };
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
 const MODEL_COLORS = ["#22c55e", "#3b82f6", "#f97316", "#e11d48", "#a855f7", "#14b8a6", "#eab308"];
 
 let sampleIds = [];
@@ -10,9 +13,282 @@ let isPlaying = false;
 let playTimer = null;
 let isFrameLoading = false;
 
+const point3d = {
+  initialized: false,
+  mount: null,
+  scene: null,
+  camera: null,
+  renderer: null,
+  controls: null,
+  points: null,
+  boxGroup: null,
+  frameId: 0,
+};
+
+function clamp01(v) {
+  return Math.max(0, Math.min(1, v));
+}
+
 function colorForExp(expId, index) {
   if (expId === "GT") return "#ffffff";
   return MODEL_COLORS[index % MODEL_COLORS.length];
+}
+
+function initPointCloud3D() {
+  if (point3d.initialized) return;
+  const mount = document.getElementById("point3dMount");
+  if (!mount) return;
+
+  text(document.getElementById("point3dStatus"), "加载中");
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color("#05070d");
+
+  const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 500);
+  let renderer = null;
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+  } catch (err) {
+    text(document.getElementById("point3dStatus"), `WebGL 初始化失败: ${String(err.message || err)}`);
+    return;
+  }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x05070d, 1);
+  mount.appendChild(renderer.domElement);
+
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 4;
+  controls.maxDistance = 150;
+  controls.target.set(30, 0, 0);
+
+  const grid = new THREE.GridHelper(60, 12, 0x64748b, 0x1f2937);
+  grid.position.set(30, 0, 0);
+  scene.add(grid);
+
+  const axes = new THREE.AxesHelper(8);
+  axes.position.set(0, 0.02, 0);
+  scene.add(axes);
+
+  const boxGroup = new THREE.Group();
+  scene.add(boxGroup);
+
+  point3d.initialized = true;
+  point3d.mount = mount;
+  point3d.scene = scene;
+  point3d.camera = camera;
+  point3d.renderer = renderer;
+  point3d.controls = controls;
+  point3d.boxGroup = boxGroup;
+
+  new ResizeObserver(resizePointCloud3D).observe(mount);
+  resizePointCloud3D();
+  applyCameraPreset();
+  animatePointCloud3D();
+}
+
+function resizePointCloud3D() {
+  if (!point3d.initialized) return;
+  const width = Math.max(1, point3d.mount.clientWidth);
+  const height = Math.max(1, point3d.mount.clientHeight);
+  point3d.renderer.setSize(width, height, false);
+  point3d.camera.aspect = width / height;
+  point3d.camera.updateProjectionMatrix();
+}
+
+function animatePointCloud3D() {
+  if (!point3d.initialized) return;
+  point3d.frameId = window.requestAnimationFrame(animatePointCloud3D);
+  point3d.controls.update();
+  point3d.renderer.render(point3d.scene, point3d.camera);
+}
+
+function applyCameraPreset() {
+  if (!point3d.initialized) return;
+  const preset = document.getElementById("cameraPreset")?.value || "perspective";
+  const camera = point3d.camera;
+  camera.up.set(0, 1, 0);
+  point3d.controls.target.set(30, 0, 0);
+
+  if (preset === "top") {
+    camera.up.set(0, 0, -1);
+    camera.position.set(30, 88, 0.01);
+  } else if (preset === "side") {
+    camera.position.set(30, 14, 78);
+  } else {
+    camera.position.set(30, 66, 42);
+  }
+  camera.lookAt(point3d.controls.target);
+  point3d.controls.update();
+}
+
+function disposeObject(obj) {
+  if (!obj) return;
+  if (obj.geometry) obj.geometry.dispose();
+  if (obj.material) {
+    if (Array.isArray(obj.material)) {
+      obj.material.forEach((m) => m.dispose());
+    } else {
+      obj.material.dispose();
+    }
+  }
+}
+
+function clearPointCloud3D() {
+  if (!point3d.initialized) return;
+  if (point3d.points) {
+    point3d.scene.remove(point3d.points);
+    disposeObject(point3d.points);
+    point3d.points = null;
+  }
+  while (point3d.boxGroup.children.length > 0) {
+    const child = point3d.boxGroup.children[0];
+    point3d.boxGroup.remove(child);
+    disposeObject(child);
+  }
+}
+
+function pointColor(point, mode) {
+  const color = new THREE.Color();
+  if (mode === "doppler") {
+    const vr = Number(point[3] ?? 0);
+    const t = clamp01((vr + 8) / 16);
+    color.lerpColors(new THREE.Color("#2563eb"), new THREE.Color("#ef4444"), t);
+    return color;
+  }
+
+  const z = Number(point[2] ?? 0);
+  const t = clamp01((z + 3) / 5);
+  color.setHSL(0.62 - 0.48 * t, 0.82, 0.56);
+  return color;
+}
+
+function addRadarPointCloud(points) {
+  const mode = document.getElementById("pointColorMode")?.value || "height";
+  const pointSize = Number(document.getElementById("pointSize")?.value || 0.08);
+  const rows = points || [];
+  const positions = new Float32Array(rows.length * 3);
+  const colors = new Float32Array(rows.length * 3);
+
+  rows.forEach((p, i) => {
+    positions[i * 3 + 0] = Number(p[0] ?? 0);
+    positions[i * 3 + 1] = Number(p[2] ?? 0);
+    positions[i * 3 + 2] = Number(p[1] ?? 0);
+    const c = pointColor(p, mode);
+    colors[i * 3 + 0] = c.r;
+    colors[i * 3 + 1] = c.g;
+    colors[i * 3 + 2] = c.b;
+  });
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  const material = new THREE.PointsMaterial({
+    size: pointSize,
+    sizeAttenuation: true,
+    vertexColors: true,
+  });
+  point3d.points = new THREE.Points(geometry, material);
+  point3d.scene.add(point3d.points);
+}
+
+function boxCorners3D(box) {
+  if (!Array.isArray(box) || box.length < 7) return [];
+  const [x, y, z, l, w, h, yaw] = box.map(Number);
+  const c = Math.cos(yaw);
+  const s = Math.sin(yaw);
+  const base = [
+    [l / 2, w / 2],
+    [l / 2, -w / 2],
+    [-l / 2, -w / 2],
+    [-l / 2, w / 2],
+  ].map(([dx, dy]) => [x + c * dx - s * dy, y + s * dx + c * dy]);
+  const zBottom = z - h / 2;
+  const zTop = z + h / 2;
+  return [
+    ...base.map(([bx, by]) => [bx, by, zBottom]),
+    ...base.map(([bx, by]) => [bx, by, zTop]),
+  ];
+}
+
+function toScenePoint([x, y, z]) {
+  return [x, z, y];
+}
+
+function addBox3D(box, color) {
+  const corners = boxCorners3D(box);
+  if (corners.length !== 8) return;
+  const edges = [
+    [0, 1],
+    [1, 2],
+    [2, 3],
+    [3, 0],
+    [4, 5],
+    [5, 6],
+    [6, 7],
+    [7, 4],
+    [0, 4],
+    [1, 5],
+    [2, 6],
+    [3, 7],
+  ];
+  const positions = new Float32Array(edges.length * 2 * 3);
+  edges.forEach(([a, b], i) => {
+    const pa = toScenePoint(corners[a]);
+    const pb = toScenePoint(corners[b]);
+    positions.set(pa, i * 6);
+    positions.set(pb, i * 6 + 3);
+  });
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  const material = new THREE.LineBasicMaterial({ color });
+  point3d.boxGroup.add(new THREE.LineSegments(geometry, material));
+}
+
+function renderPointCloud3D() {
+  initPointCloud3D();
+  if (!point3d.initialized) return;
+  clearPointCloud3D();
+
+  if (!currentSample) {
+    text(document.getElementById("point3dStatus"), "无样本");
+    document.getElementById("point3dLegend").innerHTML = "";
+    return;
+  }
+
+  const points = currentSample.radar_points || [];
+  addRadarPointCloud(points);
+
+  const classFilter = document.getElementById("classFilter").value;
+  const scoreThresh = Number(document.getElementById("scoreThresh").value);
+  const showGt = document.getElementById("show3dGt")?.checked ?? true;
+  const showPred = document.getElementById("show3dPred")?.checked ?? true;
+  const legend = [];
+  let gtCount = 0;
+  let predCount = 0;
+
+  if (showGt) {
+    const gtBoxes = filteredGtBoxes(currentSample.gt_boxes || [], classFilter);
+    gtCount = gtBoxes.length;
+    gtBoxes.forEach((g) => addBox3D(g.box_lidar, "#ffffff"));
+    legend.push(`<span style="border-color:#fff;color:#111;background:#fff">GT (${gtCount})</span>`);
+  }
+
+  if (showPred) {
+    let colorIdx = 0;
+    selectedExperiments().forEach((expId) => {
+      const pred = (currentPred || []).find((x) => x.exp_id === expId);
+      const color = colorForExp(expId, colorIdx++);
+      const boxes = filteredPredBoxes(pred ? pred.pred_boxes : [], classFilter, scoreThresh);
+      predCount += boxes.length;
+      boxes.forEach((b) => addBox3D(b.box_lidar, color));
+      legend.push(`<span style="border-color:${color};color:${color}">${expId} (${boxes.length})</span>`);
+    });
+  }
+
+  text(document.getElementById("point3dStatus"), `points=${points.length} | boxes=${gtCount + predCount}`);
+  document.getElementById("point3dLegend").innerHTML = legend.join("");
 }
 
 function toCanvasXY(x, y, width, height) {
@@ -163,6 +439,7 @@ function renderBev() {
     grid.style.display = "none";
     drawSingleCanvas();
   }
+  renderPointCloud3D();
 }
 
 function updatePlayUi() {
@@ -367,6 +644,11 @@ async function bootstrap() {
   document.getElementById("classFilter").addEventListener("change", renderBev);
   document.getElementById("viewMode").addEventListener("change", renderBev);
   document.getElementById("showGt").addEventListener("change", renderBev);
+  document.getElementById("pointColorMode").addEventListener("change", renderPointCloud3D);
+  document.getElementById("pointSize").addEventListener("input", renderPointCloud3D);
+  document.getElementById("cameraPreset").addEventListener("change", applyCameraPreset);
+  document.getElementById("show3dGt").addEventListener("change", renderPointCloud3D);
+  document.getElementById("show3dPred").addEventListener("change", renderPointCloud3D);
 
   updatePlayUi();
 }

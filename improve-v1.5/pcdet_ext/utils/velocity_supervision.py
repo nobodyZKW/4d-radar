@@ -32,6 +32,13 @@ class VelocitySupervisionEstimator:
         self.weak_weight = float(cfg.get("WEAK_WEIGHT", 0.35))
         self.strong_weight = float(cfg.get("STRONG_WEIGHT", 1.0))
         self.use_fallback_heading = bool(cfg.get("USE_FALLBACK_HEADING", True))
+        supervision_mode = str(cfg.get("SUPERVISION_MODE", "robust")).strip().lower()
+        if supervision_mode in {"none", "disabled", "off"}:
+            self.supervision_mode = "disabled"
+        elif supervision_mode in {"weak", "weak_only", "heading", "fallback"}:
+            self.supervision_mode = "weak_only"
+        else:
+            self.supervision_mode = "robust"
 
     @staticmethod
     def _points_in_rotated_box(points_xyz: np.ndarray, box: np.ndarray) -> np.ndarray:
@@ -236,7 +243,13 @@ class VelocitySupervisionEstimator:
             return vel_targets, [], {
                 "num_valid_vel_boxes": 0.0,
                 "num_weak_vel_boxes": 0.0,
+                "num_strong_vel_boxes": 0.0,
+                "num_invalid_vel_boxes": 0.0,
+                "num_total_gt_boxes": 0.0,
                 "vel_fit_residual_mean": 0.0,
+                "velocity_branch_activation_ratio": 0.0,
+                "velocity_weak_ratio": 0.0,
+                "velocity_strong_ratio": 0.0,
             }
 
         xyz = points[:, :3]
@@ -257,16 +270,30 @@ class VelocitySupervisionEstimator:
             pts_vr_comp = vr_comp[mask]
             pts_time = time_vals[mask]
 
-            est = self._robust_velocity_fit(
-                box=box,
-                pts_xyz=pts_xyz,
-                rcs=pts_rcs,
-                vr_comp=pts_vr_comp,
-                time_vals=pts_time,
-            )
-
-            if (not est.valid) and self.use_fallback_heading:
+            if self.supervision_mode == "disabled":
+                est = VelocityEstimate(
+                    velocity_xy=np.array([np.nan, np.nan], dtype=np.float32),
+                    valid=False,
+                    weak=False,
+                    quality="disabled",
+                    residual=float("nan"),
+                    num_points=int(pts_xyz.shape[0]),
+                    condition_number=float("inf"),
+                    weight=0.0,
+                )
+            elif self.supervision_mode == "weak_only":
                 est = self._fallback_heading_projection(box, pts_vr_comp)
+            else:
+                est = self._robust_velocity_fit(
+                    box=box,
+                    pts_xyz=pts_xyz,
+                    rcs=pts_rcs,
+                    vr_comp=pts_vr_comp,
+                    time_vals=pts_time,
+                )
+
+                if (not est.valid) and self.use_fallback_heading:
+                    est = self._fallback_heading_projection(box, pts_vr_comp)
 
             estimates.append(est)
 
@@ -281,9 +308,17 @@ class VelocitySupervisionEstimator:
             else:
                 vel_targets[bi, 2] = 0.0
 
+        num_strong = max(num_valid - num_weak, 0)
+        num_invalid = max(num_boxes - num_valid, 0)
         stats = {
             "num_valid_vel_boxes": float(num_valid),
             "num_weak_vel_boxes": float(num_weak),
+            "num_strong_vel_boxes": float(num_strong),
+            "num_invalid_vel_boxes": float(num_invalid),
+            "num_total_gt_boxes": float(num_boxes),
             "vel_fit_residual_mean": float(np.mean(residuals)) if residuals else 0.0,
+            "velocity_branch_activation_ratio": float(num_valid / max(num_boxes, 1)),
+            "velocity_weak_ratio": float(num_weak / max(num_valid, 1)),
+            "velocity_strong_ratio": float(num_strong / max(num_valid, 1)),
         }
         return vel_targets, estimates, stats

@@ -72,7 +72,7 @@ DEFAULT_EXPERIMENTS = [
         "id": "vel_weak_heading",
         "cfg": "configs/model_configs/ablation_a2_radar7pillar_vel.yaml",
         "set": [
-            "DATA_CONFIG.VELOCITY_SUPERVISION.MAX_CONDITION", "1.0",
+            "DATA_CONFIG.VELOCITY_SUPERVISION.SUPERVISION_MODE", "weak_only",
             "DATA_CONFIG.VELOCITY_SUPERVISION.USE_FALLBACK_HEADING", "True",
             "DATA_CONFIG.VELOCITY_SUPERVISION.WEAK_WEIGHT", "0.25",
         ],
@@ -81,6 +81,7 @@ DEFAULT_EXPERIMENTS = [
         "id": "vel_robust_lstsq",
         "cfg": "configs/model_configs/ablation_a2_radar7pillar_vel.yaml",
         "set": [
+            "DATA_CONFIG.VELOCITY_SUPERVISION.SUPERVISION_MODE", "robust",
             "DATA_CONFIG.VELOCITY_SUPERVISION.MAX_CONDITION", "5000.0",
             "DATA_CONFIG.VELOCITY_SUPERVISION.USE_FALLBACK_HEADING", "True",
         ],
@@ -96,18 +97,43 @@ PRESET_EXP_IDS = {
 }
 
 
-def resolve_paths(root: Path, cfg_rel: str, extra_tag: str) -> Tuple[Path, Path]:
+def resolve_paths(root: Path, cfg_rel: str, extra_tag: str, set_cfgs: List[str]) -> Tuple[Path, List[Path]]:
     cfg_path = (root / cfg_rel).resolve()
-    cfg_name = cfg_path.stem
-    exp_group = cfg_path.parent.name
-    ckpt_dir = root / "external" / "OpenPCDet" / "output" / exp_group / cfg_name / extra_tag / "ckpt"
-    return cfg_path, ckpt_dir
+    cfg_obj = copy.deepcopy(cfg)
+    cfg_from_yaml_file(str(cfg_path), cfg_obj)
+    if set_cfgs:
+        cfg_from_list(set_cfgs, cfg_obj)
+
+    output_root = root / "external" / "OpenPCDet" / "output"
+    cfg_tag = str(cfg_obj.get("TAG", cfg_path.stem))
+    exp_group = str(cfg_obj.get("EXP_GROUP_PATH", "")).strip().strip("/\\")
+
+    candidates = []
+    if exp_group:
+        candidates.append(output_root / exp_group / cfg_tag / extra_tag / "ckpt")
+    # OpenPCDet in this repo often writes to output/<TAG>/<extra_tag>/ckpt
+    candidates.append(output_root / cfg_tag / extra_tag / "ckpt")
+    # Backward-compatible fallback for old runner logic.
+    candidates.append(output_root / cfg_path.parent.name / cfg_path.stem / extra_tag / "ckpt")
+
+    deduped = []
+    for p in candidates:
+        if p not in deduped:
+            deduped.append(p)
+    return cfg_path, deduped
 
 
-def find_latest_ckpt(ckpt_dir: Path) -> Path:
-    ckpts = sorted(ckpt_dir.glob("*.pth"), key=lambda p: p.stat().st_mtime)
-    if not ckpts:
-        raise FileNotFoundError(f"No checkpoint found in {ckpt_dir}")
+def find_latest_ckpt(ckpt_dirs: List[Path]) -> Path:
+    checked = []
+    for ckpt_dir in ckpt_dirs:
+        checked.append(str(ckpt_dir))
+        if not ckpt_dir.exists():
+            continue
+        ckpts = sorted(ckpt_dir.glob("*.pth"), key=lambda p: p.stat().st_mtime)
+        if ckpts:
+            return ckpts[-1]
+    checked_str = "\n".join(checked)
+    raise FileNotFoundError(f"No checkpoint found in candidate dirs:\n{checked_str}")
     return ckpts[-1]
 
 
@@ -249,7 +275,7 @@ def main():
         set_cfgs = list(exp.get("set", []))
         extra_tag = f"{args.extra_tag_prefix}_{exp_id}"
 
-        cfg_path, ckpt_dir = resolve_paths(root, cfg_rel, extra_tag)
+        cfg_path, ckpt_dirs = resolve_paths(root, cfg_rel, extra_tag, set_cfgs)
         print(f"[Ablation] {exp_id} -> cfg={cfg_path}")
         if args.dry_run:
             rows.append(
@@ -260,7 +286,7 @@ def main():
                     "quick/mean_f1": 0.0,
                     "note": "dry-run",
                     "extra_tag": extra_tag,
-                    "expected_ckpt_dir": str(ckpt_dir),
+                    "expected_ckpt_dirs": " | ".join(str(x) for x in ckpt_dirs),
                 }
             )
             continue
@@ -269,7 +295,7 @@ def main():
             run_train(root=root, cfg_path=cfg_path, extra_tag=extra_tag, workers=args.workers, epochs=args.epochs, set_cfgs=set_cfgs)
 
         try:
-            ckpt_path = find_latest_ckpt(ckpt_dir)
+            ckpt_path = find_latest_ckpt(ckpt_dirs)
         except FileNotFoundError:
             if not args.skip_missing_ckpt:
                 raise
@@ -280,12 +306,12 @@ def main():
                 "quick/mean_f1": 0.0,
                 "note": "missing-ckpt",
                 "extra_tag": extra_tag,
-                "expected_ckpt_dir": str(ckpt_dir),
+                "expected_ckpt_dirs": " | ".join(str(x) for x in ckpt_dirs),
             }
             rows.append(row)
             json_path = output_dir / f"{exp_id}.json"
             json_path.write_text(json.dumps(row, ensure_ascii=False, indent=2), encoding="utf-8")
-            print(f"[WARN] Missing checkpoint for {exp_id}, skipped. Expected: {ckpt_dir}")
+            print(f"[WARN] Missing checkpoint for {exp_id}, skipped. Expected one of:\n" + "\n".join(str(x) for x in ckpt_dirs))
             continue
 
         metrics = evaluate_cfg_ckpt(root=root, cfg_path=cfg_path, ckpt_path=ckpt_path, workers=args.workers, set_cfgs=set_cfgs)
